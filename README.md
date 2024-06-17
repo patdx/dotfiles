@@ -20,7 +20,15 @@ git config --global core.editor "code --wait"
 -   git
 -   git-lfs
 -   VS Code
--   [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)
+-   [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager) (See next section)
+
+#### Install Git Credential Manager on Linux
+
+While Git Credential Manager does provide a .dev, they sadly don't provide a .rpm for Fedora users.
+
+Here is a Bun.js script that will attempt to automate download and installation of the latest version:
+
+https://github.com/patdx/dotfiles/blob/main/install-gcm-linux.ts
 
 ## Software Projects
 
