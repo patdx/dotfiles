@@ -1,18 +1,8 @@
 #!/usr/bin/env bun
 
-// https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/install.md
+// https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/install.md#net-tool
 
 import { $ } from 'bun';
-
-const uid = process.getuid?.();
-
-console.log(`UID: ${uid}`);
-
-if (uid !== 0) {
-  console.log('This script must be run as root');
-  await $`sudo ${process.argv[0]} ${process.argv[1]}`;
-  process.exit(1);
-}
 
 type Release = {
   assets: {
@@ -44,5 +34,27 @@ if (!asset) {
 console.log(`Downloading: ${asset.name}`);
 
 await $`curl -L -o gcm.tar.gz ${asset.browser_download_url}`;
-await $`tar -xvf gcm.tar.gz -C /usr/local/bin`;
+
+const uid = process.getuid?.();
+console.log(`UID: ${uid}`);
+if (uid !== 0) {
+  console.log('Requesting root privileges');
+  await $`sudo tar -xvf gcm.tar.gz -C /usr/local/bin`;
+} else {
+  await $`tar -xvf gcm.tar.gz -C /usr/local/bin`;
+}
+
 await $`git-credential-manager configure`;
+
+//
+
+console.log('');
+console.log(`Note: Additional configuration required for Linux`);
+console.log(
+  'https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/credstores.md'
+);
+console.log(
+  'For GUI Linux users, it is recommended to use freedesktop.org Secret Service API:'
+);
+console.log('');
+console.log(`git config --global credential.credentialStore secretservice`);
