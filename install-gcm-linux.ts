@@ -1,6 +1,11 @@
 #!/usr/bin/env bun
 
-// https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/install.md#net-tool
+// How to run:
+// 1. Install Bun at https://bun.sh/docs/installation
+// 2. Run the following line in your terminal:
+//    curl https://raw.githubusercontent.com/patdx/dotfiles/main/install-gcm-linux.ts | bun run -
+
+// https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/install.md
 
 import { $ } from 'bun';
 
