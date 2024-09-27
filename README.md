@@ -36,6 +36,16 @@ You can check the source here: https://github.com/patdx/dotfiles/blob/main/insta
 
 The original instructions are here: https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/install.md#tarball
 
+### Python
+
+As I don't use python so much, I think it's nice to use pipx:
+
+https://pipx.pypa.io/stable/
+
+In order to intall python tool such as aider:
+
+https://aider.chat/docs/install/pipx.html
+
 ## Software Projects
 
 ### .editorconfig
