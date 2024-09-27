@@ -38,9 +38,11 @@ The original instructions are here: https://github.com/git-ecosystem/git-credent
 
 ### Python
 
-As I don't use python so much, I think it's nice to use pipx:
+~~As I don't use python so much, I think it's nice to use pipx:~~
 
-https://pipx.pypa.io/stable/
+~~https://pipx.pypa.io/stable/~~
+
+Update: I tried pipx and then I could not install extension `aider-chat[browser]`. It did not make anything easier.
 
 In order to intall python tool such as aider:
 
