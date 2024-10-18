@@ -17,7 +17,11 @@ await $`fnm default 20`;
 await $`fnm use 20`;
 await $`npm update -g --latest`;
 await $`corepack install --global pnpm`;
-await $`yt-dlp -U`;
+
+if (await commandExists('yt-dlp')) {
+  await $`yt-dlp -U`;
+}
+
 await import(
   'https://raw.githubusercontent.com/patdx/dotfiles/main/install-gcm-linux.ts'
 ).then((m) => m.installGcmLinux());
@@ -29,7 +33,7 @@ async function init() {
   const rx_http = /^https?:\/\//;
   const rx_relative_path = /^\.\.?\//;
 
-  await Bun.plugin({
+  Bun.plugin({
     name: 'http_imports',
     setup(build) {
       async function load_http_module(href: string): Promise<OnLoadResult> {
@@ -56,4 +60,9 @@ async function init() {
       });
     },
   });
+}
+
+async function commandExists(command: string): Promise<boolean> {
+  const result = await $`command -v ${command}`.quiet().nothrow();
+  return result.exitCode === 0;
 }
