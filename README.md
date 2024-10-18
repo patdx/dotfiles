@@ -36,6 +36,14 @@ You can check the source here: https://github.com/patdx/dotfiles/blob/main/insta
 
 The original instructions are here: https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/install.md#tarball
 
+#### Doing updates on Linux
+
+I have a script to do my preferred updates on Linux. It will also upgrade your git-credential-manager version using the script above as needed.
+
+```sh
+curl https://raw.githubusercontent.com/patdx/dotfiles/main/update.ts | bun run -
+```
+
 ### Python
 
 ~~As I don't use python so much, I think it's nice to use pipx:~~
