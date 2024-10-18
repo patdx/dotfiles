@@ -40,7 +40,6 @@ async function init() {
         const response = await fetch(href);
         const text = await response.text();
         if (response.ok) {
-          console.log('loaded ' + text);
           return { contents: text, loader: 'tsx' };
         } else {
           throw new Error(`Failed to load module '${href}': ${text}`);

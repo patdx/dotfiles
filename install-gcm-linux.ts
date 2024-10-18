@@ -113,7 +113,7 @@ function getLatestVersion(release: Release) {
 }
 
 async function getInstalledVersion() {
-  const result = await $`git-credential-manager --version`;
+  const result = await $`git-credential-manager --version`.quiet();
   // May return something like:
   // 2.6.0+3c28096588f549cb46f36b552390514356830abe
   const [version] = result.text().trim().split('+');
