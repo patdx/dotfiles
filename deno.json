@@ -1,6 +1,6 @@
 {
   "name": "@patdx/dotfiles",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "exports": {
     "./update": "./update.ts",
     "./install-gcm-linux": "./install-gcm-linux.ts"
