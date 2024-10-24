@@ -16,9 +16,7 @@ if (await commandExists('yt-dlp')) {
   await $`yt-dlp -U`;
 }
 
-await import(
-  'https://raw.githubusercontent.com/patdx/dotfiles/main/install-gcm-linux.ts'
-).then((m) => m.installGcmLinux());
+await import('./install-gcm-linux.ts').then((m) => m.installGcmLinux());
 
 console.log('Update completed successfully!');
 

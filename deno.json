@@ -1,4 +1,10 @@
 {
+  "name": "@patdx/dotfiles",
+  "version": "0.1.0",
+  "exports": {
+    "./update": "./update.ts",
+    "./install-gcm-linux": "./install-gcm-linux.ts"
+  },
   "tasks": {
     "dev": "deno run --watch main.ts"
   },
