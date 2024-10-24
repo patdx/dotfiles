@@ -1,10 +1,14 @@
-#!/usr/bin/env bun
+#!/usr/bin/env -S deno run --allow-all
 
-// deno run -A https://raw.githubusercontent.com/patdx/dotfiles/main/install-gcm-linux.ts
+/**
+ * This file helps to install Github Credential Manager on Linux
+ *
+ * @module
+ */
 
-import $ from "@david/dax"
+import $ from '@david/dax';
 import fs from 'node:fs';
-import process from "node:process";
+import process from 'node:process';
 
 type Release = {
   /** @example "v2.6.0" */
@@ -39,9 +43,11 @@ export async function installGcmLinux() {
 
   if (!asset) {
     console.log(
-      `No asset found. All assets: ${JSON.stringify(
-        result.assets.map((asset) => asset.name),
-      )}`,
+      `No asset found. All assets: ${
+        JSON.stringify(
+          result.assets.map((asset) => asset.name),
+        )
+      }`,
     );
     process.exit(1);
   }
@@ -95,10 +101,6 @@ class TempDir implements Disposable {
   }
 }
 
-if (import.meta.main) {
-  await installGcmLinux();
-}
-
 async function downloadFile(url: string, filename: string) {
   console.log(`Downloading file from ${url} to ${filename}`);
   const response = await fetch(url);
@@ -119,4 +121,8 @@ async function getInstalledVersion() {
   // 2.6.0+3c28096588f549cb46f36b552390514356830abe
   const [version] = result.stdout.trim().split('+');
   return version;
+}
+
+if (import.meta.main) {
+  await installGcmLinux();
 }

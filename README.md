@@ -6,7 +6,8 @@ This repository contains my preferred settings for new development environments.
 
 ### git
 
-For git I don't have a config file, I just run the following script to update the global config.
+For git I don't have a config file, I just run the following script to update
+the global config.
 
 ```sh
 git config --global init.defaultBranch main
@@ -17,31 +18,37 @@ git config --global core.editor "code --wait"
 
 ### Software to Install
 
--   git
--   git-lfs
--   VS Code
--   [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager) (See next section)
+- git
+- git-lfs
+- VS Code
+- [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)
+  (See next section)
 
 #### Install Git Credential Manager on Linux
 
-While Git Credential Manager does provide a .dev, they sadly don't provide a .rpm for Fedora users.
+While Git Credential Manager does provide a .dev, they sadly don't provide a
+.rpm for Fedora users.
 
-I've prepared a simple script to install it on Linux. I nstall Deno then run the following command:
+I've prepared a simple script to install it on Linux. I nstall Deno then run the
+following command:
 
 ```sh
-deno run -A https://raw.githubusercontent.com/patdx/dotfiles/main/install-gcm-linux.ts
+deno run -A jsr:@patdx/dotfiles/install-gcm-linux.ts
 ```
 
-You can check the source here: https://github.com/patdx/dotfiles/blob/main/install-gcm-linux.ts
+You can check the source here:
+https://github.com/patdx/dotfiles/blob/main/install-gcm-linux.ts
 
-The original instructions are here: https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/install.md#tarball
+The original instructions are here:
+https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/install.md#tarball
 
 #### Doing updates on Linux
 
-I have a script to do my preferred updates on Linux. It will also upgrade your git-credential-manager version using the script above as needed.
+I have a script to do my preferred updates on Linux. It will also upgrade your
+git-credential-manager version using the script above as needed.
 
 ```sh
-deno run -A https://raw.githubusercontent.com/patdx/dotfiles/main/update.ts
+deno run -A jsr:@patdx/dotfiles/update.ts
 ```
 
 ### Python
@@ -50,7 +57,8 @@ deno run -A https://raw.githubusercontent.com/patdx/dotfiles/main/update.ts
 
 ~~https://pipx.pypa.io/stable/~~
 
-Update: I tried pipx and then I could not install extension `aider-chat[browser]`. It did not make anything easier.
+Update: I tried pipx and then I could not install extension
+`aider-chat[browser]`. It did not make anything easier.
 
 In order to intall python tool such as aider:
 
@@ -60,7 +68,8 @@ https://aider.chat/docs/install/pipx.html
 
 ### .editorconfig
 
-While I do like indent of 2 spaces, it makes it a pain to do nested lists in Markdown together with Prettier. Therefore I prefer 4 spaces for Markdown.
+While I do like indent of 2 spaces, it makes it a pain to do nested lists in
+Markdown together with Prettier. Therefore I prefer 4 spaces for Markdown.
 
 ```editorconfig
 root = true

@@ -1,18 +1,19 @@
 {
   "name": "@patdx/dotfiles",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "exports": {
-    "./update": "./update.ts",
-    "./install-gcm-linux": "./install-gcm-linux.ts"
+    "./update.ts": "./update.ts",
+    "./install-gcm-linux.ts": "./install-gcm-linux.ts"
   },
-  "tasks": {
-    "dev": "deno run --watch main.ts"
-  },
+  "tasks": {},
   "imports": {
     "@david/dax": "jsr:@david/dax@^0.42.0"
   },
   "publish": {
     "include": ["LICENSE", "README.md", "update.ts", "install-gcm-linux.ts"],
     "exclude": []
+  },
+  "fmt": {
+    "singleQuote": true
   }
 }
