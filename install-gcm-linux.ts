@@ -1,9 +1,10 @@
 #!/usr/bin/env bun
 
-// https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/install.md
+// deno run -A https://raw.githubusercontent.com/patdx/dotfiles/main/install-gcm-linux.ts
 
-import { $ } from 'bun';
+import $ from "@david/dax"
 import fs from 'node:fs';
+import process from "node:process";
 
 type Release = {
   /** @example "v2.6.0" */
@@ -45,7 +46,7 @@ export async function installGcmLinux() {
     process.exit(1);
   }
 
-  using tempDir = new TempDir('.temp');
+  using _tempDir = new TempDir('.temp');
 
   await downloadFile(asset.browser_download_url, '.temp/gcm.tar.gz');
 
@@ -104,7 +105,7 @@ async function downloadFile(url: string, filename: string) {
   if (!response.ok) {
     throw new Error(`Failed to download file: ${response.statusText}`);
   }
-  await Bun.write(filename, response);
+  await Deno.writeFile(filename, response.body!);
   console.log(`Downloaded file to ${filename}`);
 }
 
@@ -116,6 +117,6 @@ async function getInstalledVersion() {
   const result = await $`git-credential-manager --version`.quiet();
   // May return something like:
   // 2.6.0+3c28096588f549cb46f36b552390514356830abe
-  const [version] = result.text().trim().split('+');
+  const [version] = result.stdout.trim().split('+');
   return version;
 }

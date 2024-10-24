@@ -1,0 +1,8 @@
+{
+  "tasks": {
+    "dev": "deno run --watch main.ts"
+  },
+  "imports": {
+    "@david/dax": "jsr:@david/dax@^0.42.0"
+  }
+}

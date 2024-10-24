@@ -26,10 +26,10 @@ git config --global core.editor "code --wait"
 
 While Git Credential Manager does provide a .dev, they sadly don't provide a .rpm for Fedora users.
 
-I've prepared a simple script to install it on Linux. After [installing Bun](https://bun.sh/docs/installation), run the following script:
+I've prepared a simple script to install it on Linux. I nstall Deno then run the following command:
 
 ```sh
-curl https://raw.githubusercontent.com/patdx/dotfiles/main/install-gcm-linux.ts | bun run -
+deno run -A https://raw.githubusercontent.com/patdx/dotfiles/main/install-gcm-linux.ts
 ```
 
 You can check the source here: https://github.com/patdx/dotfiles/blob/main/install-gcm-linux.ts
@@ -41,7 +41,7 @@ The original instructions are here: https://github.com/git-ecosystem/git-credent
 I have a script to do my preferred updates on Linux. It will also upgrade your git-credential-manager version using the script above as needed.
 
 ```sh
-curl https://raw.githubusercontent.com/patdx/dotfiles/main/update.ts | bun run -
+deno run -A https://raw.githubusercontent.com/patdx/dotfiles/main/update.ts
 ```
 
 ### Python
