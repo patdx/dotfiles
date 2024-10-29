@@ -8,6 +8,8 @@
 
 import $ from '@david/dax';
 
+$.setPrintCommand(true);
+
 export async function update() {
   if (await commandExists('bun')) {
     await $`bun upgrade`;
@@ -24,11 +26,11 @@ export async function update() {
   }
 
   if (await commandExists('npm')) {
-    await $`npm update -g --latest`;
+    await $`npm update --global --latest`;
   }
 
   if (await commandExists('corepack')) {
-    await $`corepack install --global pnpm`;
+    await $`corepack install --global pnpm@latest`;
   }
 
   if (await commandExists('yt-dlp')) {
@@ -45,7 +47,8 @@ export async function update() {
 }
 
 async function commandExists(command: string): Promise<boolean> {
-  const result = await $`command -v ${command}`.quiet().noThrow();
+  const result = await $`command -v ${command}`.printCommand(false).quiet()
+    .noThrow();
   return result.code === 0;
 }
 
