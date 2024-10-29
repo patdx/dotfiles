@@ -18,11 +18,11 @@ git config --global core.editor "code --wait"
 
 ### Software to Install
 
-- git
-- git-lfs
-- VS Code
-- [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)
-  (See next section)
+-   git
+-   git-lfs
+-   VS Code
+-   [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)
+    (See next section)
 
 #### Install Git Credential Manager on Linux
 
@@ -49,6 +49,12 @@ git-credential-manager version using the script above as needed.
 
 ```sh
 deno run -A jsr:@patdx/dotfiles/update.ts
+
+# Use reload to make sure to get the latest version
+deno run -A --reload jsr:@patdx/dotfiles/update.ts
+
+# Use the latest version specifically
+deno run -A jsr:@patdx/dotfiles@0.1.4/update.ts
 ```
 
 ### Python
