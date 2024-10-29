@@ -1,16 +1,27 @@
 {
   "name": "@patdx/dotfiles",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "exports": {
-    "./update.ts": "./update.ts",
-    "./install-gcm-linux.ts": "./install-gcm-linux.ts"
+    "./update": "./src/update.ts",
+    "./install-gcm-linux": "./src/install-gcm-linux.ts",
+    "./install-binary": "./src/install-binary.ts"
   },
-  "tasks": {},
+  "tasks": {
+    "update-lockfile": "deno cache --lock-write"
+  },
   "imports": {
-    "@david/dax": "jsr:@david/dax@^0.42.0"
+    "@david/dax": "jsr:@david/dax@^0.42.0",
+    "@std/fs": "jsr:@std/fs@^1.0.5",
+    "@std/path": "jsr:@std/path@^1.0.7"
   },
   "publish": {
-    "include": ["LICENSE", "README.md", "update.ts", "install-gcm-linux.ts"],
+    "include": [
+      "LICENSE",
+      "README.md",
+      "src/update.ts",
+      "src/install-gcm-linux.ts",
+      "src/install-binary.ts"
+    ],
     "exclude": []
   },
   "fmt": {

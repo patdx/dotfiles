@@ -33,7 +33,7 @@ I've prepared a simple script to install it on Linux. I nstall Deno then run the
 following command:
 
 ```sh
-deno run -A jsr:@patdx/dotfiles/install-gcm-linux.ts
+deno run -A jsr:@patdx/dotfiles/install-gcm-linux
 ```
 
 You can check the source here:
@@ -42,19 +42,33 @@ https://github.com/patdx/dotfiles/blob/main/install-gcm-linux.ts
 The original instructions are here:
 https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/install.md#tarball
 
+#### Installing Zipped Binaries on Linux
+
+It can be inconvenient when tools just provide a zipped binary and ask you to install it.
+
+Use the "update" script to automatically download and install a zipped binary to `~/.local/bin`.
+
+It will also update your .zshrc or .bashrc to add the path to the binary.
+
+Example for DuckDB:
+
+```sh
+deno run -A jsr:@patdx/dotfiles/install-binary https://github.com/duckdb/duckdb/releases/download/v1.1.2/duckdb_cli-linux-amd64.zip duckdb
+```
+
 #### Doing updates on Linux
 
 I have a script to do my preferred updates on Linux. It will also upgrade your
 git-credential-manager version using the script above as needed.
 
 ```sh
-deno run -A jsr:@patdx/dotfiles/update.ts
+deno run -A jsr:@patdx/dotfiles/update
 
 # Use reload to make sure to get the latest version
-deno run -A --reload jsr:@patdx/dotfiles/update.ts
+deno run -A --reload jsr:@patdx/dotfiles/update
 
 # Use the latest version specifically
-deno run -A jsr:@patdx/dotfiles@0.1.4/update.ts
+deno run -A jsr:@patdx/dotfiles@0.1.4/update
 ```
 
 ### Python
