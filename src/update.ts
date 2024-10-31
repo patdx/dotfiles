@@ -20,9 +20,9 @@ export async function update() {
   }
 
   if (await commandExists('fnm')) {
-    await $`fnm install 20`;
-    await $`fnm default 20`;
-    await $`fnm use 20`;
+    await $`fnm install 22`;
+    await $`fnm default 22`;
+    await $`fnm use 22`;
   }
 
   if (await commandExists('npm')) {
