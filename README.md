@@ -61,14 +61,18 @@ deno run -A jsr:@patdx/dotfiles/install-binary https://github.com/duckdb/duckdb/
 I have a script to do my preferred updates on Linux. It will also upgrade your
 git-credential-manager version using the script above as needed.
 
+##### Use the latest version
+
+It is recommended to use the `--reload` flag to ensure you are using the latest version.
+
 ```sh
-deno run -A jsr:@patdx/dotfiles/update
-
-# Use reload to make sure to get the latest version
 deno run -A --reload jsr:@patdx/dotfiles/update
+```
 
-# Use the latest version specifically
-deno run -A jsr:@patdx/dotfiles@0.1.4/update
+##### Use a specific version
+
+```sh
+deno run -A jsr:@patdx/dotfiles@0.1.7/update
 ```
 
 ### Python
