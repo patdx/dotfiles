@@ -1,13 +1,14 @@
 {
   "name": "@patdx/dotfiles",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "exports": {
     "./update": "./src/update.ts",
     "./install-gcm-linux": "./src/install-gcm-linux.ts",
     "./install-binary": "./src/install-binary.ts"
   },
   "tasks": {
-    "update-lockfile": "deno cache --lock-write"
+    "update-lockfile": "deno cache --lock-write",
+    "link-check": "npx markdown-link-check README.md"
   },
   "imports": {
     "@david/dax": "jsr:@david/dax@^0.42.0",

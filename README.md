@@ -37,7 +37,7 @@ deno run -A jsr:@patdx/dotfiles/install-gcm-linux
 ```
 
 You can check the source here:
-https://github.com/patdx/dotfiles/blob/main/install-gcm-linux.ts
+https://github.com/patdx/dotfiles/blob/main/src/install-gcm-linux.ts
 
 The original instructions are here:
 https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/install.md#tarball
