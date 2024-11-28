@@ -1,14 +1,17 @@
 {
   "name": "@patdx/pkg",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "license": "MIT",
   "exports": {
+    ".": "./cli.ts",
     "./install-gcm-linux": "./install-gcm-linux.ts",
     "./install-binary": "./install-binary.ts",
     "./install-windsurf": "./install-windsurf.ts"
   },
   "imports": {
     "@david/dax": "jsr:@david/dax@^0.42.0",
+    "@std/cli": "jsr:@std/cli@^1.0.7",
+    "@std/flags": "jsr:@std/flags@^0.224.0",
     "@std/fs": "jsr:@std/fs@^1.0.5",
     "@std/path": "jsr:@std/path@^1.0.7",
     "create-desktop-shortcuts": "npm:create-desktop-shortcuts@^1.11.0",
