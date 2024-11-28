@@ -1,6 +1,7 @@
 {
   "name": "@patdx/update",
-  "version": "0.1.9",
+  "version": "0.2.1",
+  "license": "MIT",
   "exports": {
     ".": "./update.ts"
   },
