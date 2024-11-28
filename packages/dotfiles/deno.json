@@ -1,0 +1,11 @@
+{
+  "name": "@patdx/dotfiles",
+  "version": "0.2.0",
+  "exports": {
+    ".": "./main.ts"
+  },
+  "publish": {
+    "include": ["README.md", "main.ts"],
+    "exclude": []
+  }
+}

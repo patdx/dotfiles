@@ -1,0 +1,22 @@
+{
+  "name": "@patdx/pkg",
+  "version": "0.1.9",
+  "exports": {
+    "./install-gcm-linux": "./install-gcm-linux.ts",
+    "./install-binary": "./install-binary.ts"
+  },
+  "imports": {
+    "@david/dax": "jsr:@david/dax@^0.42.0",
+    "@std/fs": "jsr:@std/fs@^1.0.5",
+    "@std/path": "jsr:@std/path@^1.0.7"
+  },
+  "publish": {
+    "include": [
+      "LICENSE",
+      "README.md",
+      "install-gcm-linux.ts",
+      "install-binary.ts"
+    ],
+    "exclude": []
+  }
+}

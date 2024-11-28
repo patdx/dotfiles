@@ -18,11 +18,11 @@ git config --global core.editor "code --wait"
 
 ### Software to Install
 
--   git
--   git-lfs
--   VS Code
--   [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)
-    (See next section)
+- git
+- git-lfs
+- VS Code
+- [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)
+  (See next section)
 
 #### Install Git Credential Manager on Linux
 
@@ -44,9 +44,11 @@ https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/instal
 
 #### Installing Zipped Binaries on Linux
 
-It can be inconvenient when tools just provide a zipped binary and ask you to install it.
+It can be inconvenient when tools just provide a zipped binary and ask you to
+install it.
 
-Use the "update" script to automatically download and install a zipped binary to `~/.local/bin`.
+Use the "update" script to automatically download and install a zipped binary to
+`~/.local/bin`.
 
 It will also update your .zshrc or .bashrc to add the path to the binary.
 
@@ -63,7 +65,8 @@ git-credential-manager version using the script above as needed.
 
 ##### Use the latest version
 
-It is recommended to use the `--reload` flag to ensure you are using the latest version.
+It is recommended to use the `--reload` flag to ensure you are using the latest
+version.
 
 ```sh
 deno run -A --reload jsr:@patdx/dotfiles/update
