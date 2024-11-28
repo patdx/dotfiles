@@ -1,23 +1,21 @@
 {
   "name": "@patdx/pkg",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "license": "MIT",
   "exports": {
     "./install-gcm-linux": "./install-gcm-linux.ts",
-    "./install-binary": "./install-binary.ts"
+    "./install-binary": "./install-binary.ts",
+    "./install-windsurf": "./install-windsurf.ts"
   },
   "imports": {
     "@david/dax": "jsr:@david/dax@^0.42.0",
     "@std/fs": "jsr:@std/fs@^1.0.5",
-    "@std/path": "jsr:@std/path@^1.0.7"
+    "@std/path": "jsr:@std/path@^1.0.7",
+    "create-desktop-shortcuts": "npm:create-desktop-shortcuts@^1.11.0",
+    "ofetch": "npm:ofetch@^1.4.1"
   },
   "publish": {
-    "include": [
-      "LICENSE",
-      "README.md",
-      "install-gcm-linux.ts",
-      "install-binary.ts"
-    ],
+    "include": ["LICENSE", "README.md", "**/*.ts"],
     "exclude": []
   }
 }

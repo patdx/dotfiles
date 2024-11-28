@@ -9,6 +9,7 @@
 import $ from '@david/dax'
 import fs from 'node:fs'
 import process from 'node:process'
+import { downloadToFile } from './shared.ts'
 
 type Release = {
   /** @example "v2.6.0" */
@@ -54,7 +55,7 @@ export async function installGcmLinux() {
 
   using _tempDir = new TempDir('.temp')
 
-  await downloadFile(asset.browser_download_url, '.temp/gcm.tar.gz')
+  await downloadToFile(asset.browser_download_url, '.temp/gcm.tar.gz')
 
   const uid = process.getuid?.()
   console.log(`UID: ${uid}`)
@@ -99,16 +100,6 @@ class TempDir implements Disposable {
     // Remove the directory and its contents recursively
     fs.rmSync(this.#path, { recursive: true, force: true })
   }
-}
-
-async function downloadFile(url: string, filename: string) {
-  console.log(`Downloading file from ${url} to ${filename}`)
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error(`Failed to download file: ${response.statusText}`)
-  }
-  await Deno.writeFile(filename, response.body!)
-  console.log(`Downloaded file to ${filename}`)
 }
 
 function getLatestVersion(release: Release) {
