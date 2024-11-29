@@ -18,11 +18,11 @@ git config --global core.editor "code --wait"
 
 ### Software to Install
 
-- git
-- git-lfs
-- VS Code
-- [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)
-  (See next section)
+-   git
+-   git-lfs
+-   VS Code
+-   [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)
+    (See next section)
 
 #### Install Git Credential Manager on Linux
 
@@ -33,7 +33,7 @@ I've prepared a simple script to install it on Linux. I nstall Deno then run the
 following command:
 
 ```sh
-deno run -A jsr:@patdx/dotfiles/install-gcm-linux
+deno run -A jsr:@patdx/pkg/install-gcm-linux
 ```
 
 You can check the source here:
@@ -55,7 +55,7 @@ It will also update your .zshrc or .bashrc to add the path to the binary.
 Example for DuckDB:
 
 ```sh
-deno run -A jsr:@patdx/dotfiles/install-binary https://github.com/duckdb/duckdb/releases/download/v1.1.2/duckdb_cli-linux-amd64.zip duckdb
+deno run -A jsr:@patdx/pkg/install-binary https://github.com/duckdb/duckdb/releases/download/v1.1.2/duckdb_cli-linux-amd64.zip duckdb
 ```
 
 #### Doing updates on Linux
@@ -69,13 +69,13 @@ It is recommended to use the `--reload` flag to ensure you are using the latest
 version.
 
 ```sh
-deno run -A --reload jsr:@patdx/dotfiles/update
+deno run -A --reload jsr:@patdx/update
 ```
 
 ##### Use a specific version
 
 ```sh
-deno run -A jsr:@patdx/dotfiles@0.1.7/update
+deno run -A jsr:@patdx/update@0.1.7
 ```
 
 ### Python

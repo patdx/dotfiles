@@ -81,9 +81,12 @@ export async function installWindsurf() {
   }
 
   console.log(`Linking ${installCurrentDir} to ${installVersionDir}`)
-  await Deno.remove(installCurrentDir, {
-    recursive: true,
-  }) // in case symlink already exists
+
+  if (await exists(installCurrentDir)) {
+    await Deno.remove(installCurrentDir, {
+      recursive: true,
+    })
+  }
 
   await Deno.symlink(
     installVersionDir,
@@ -97,7 +100,9 @@ export async function installWindsurf() {
 
   console.log(`Linking ${linkNew} to ${linkOld}`)
 
-  await Deno.remove(linkNew) // in case symlink already exists
+  if (await exists(linkNew)) {
+    await Deno.remove(linkNew) // in case symlink already exists
+  }
   await Deno.symlink(linkOld, linkNew)
 
   const desktopDir = path.join(
