@@ -17,7 +17,7 @@ import {
   PKG_HOME,
   TempDir,
   tryMove,
-} from './shared.ts'
+} from './shared/shared.ts'
 import { checkUrl } from './shared/url-checker.ts'
 import { guessBinaryName } from './shared/guess-binary-name.ts'
 import type { InstallOptions, KnownPackage } from './shared/types.ts'

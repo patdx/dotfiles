@@ -1,14 +1,15 @@
 import { parseArgs } from '@std/cli/parse-args'
 import { downloadAndInstall } from './install-binary.ts'
 import { availableProviders } from './shared/url-checker.ts'
-import { listInstalledPackages, removePackage } from './shared.ts'
-import type { KnownPackage } from './types.ts'
+import { listInstalledPackages, removePackage } from './shared/shared.ts'
+import type { KnownPackage } from './shared/types.ts'
 
 async function checkForKnownPackage(
   name: string,
 ): Promise<KnownPackage | null> {
   try {
-    return import(`./repo/${name}.ts`).then((mod) => mod.default)
+    const result = await import(`./repo/${name}.ts`).then((mod) => mod.default)
+    return result
   } catch (_error) {
     return null
   }
