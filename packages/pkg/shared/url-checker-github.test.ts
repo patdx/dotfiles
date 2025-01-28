@@ -1,5 +1,9 @@
 import { assert, assertEquals } from '@std/assert'
-import { analyzeAssets, findViableAsset } from './url-checker-github.ts'
+import {
+  analyzeAssets,
+  findViableAsset,
+  getPlatformIdentifiers,
+} from './url-checker-github.ts'
 import type { GithubRelease } from './url-checker-github.ts'
 
 const duckdbAssets: GithubRelease['assets'] = [
@@ -318,4 +322,16 @@ Deno.test('findViableAsset - Multiple viable assets', () => {
     // Restore original console.warn
     console.warn = originalWarn
   }
+})
+
+Deno.test('getPlatformIdentifiers - Linux x64', () => {
+  const context = { platform: 'linux', arch: 'x64' }
+  const { platforms, archs } = getPlatformIdentifiers(context)
+
+  assertEquals(platforms, ['linux'], 'Should only include linux platform')
+  assertEquals(
+    archs,
+    ['x64', 'amd64'],
+    'Should include x64 and its alias amd64',
+  )
 })

@@ -50,26 +50,30 @@ interface CheckerContext {
 export function getPlatformIdentifiers(
   context: CheckerContext = { platform: process.platform, arch: process.arch },
 ): { platforms: string[]; archs: string[] } {
-  const platforms: string[] = [context.platform]
+  const platforms: string[] = []
+  const archs: string[] = []
 
+  // Add base platform
+  platforms.push(context.platform)
+
+  // Add platform aliases
   if (context.platform === 'darwin') {
     platforms.push('macos', 'osx')
-  } else if (context.platform === 'linux') {
-    platforms.push('linux')
   } else if (context.platform === 'win32') {
     platforms.push('windows')
-  } else {
-    platforms.push(context.platform)
   }
 
-  const archs: string[] = [context.arch]
+  // Add base architecture
+  archs.push(context.arch)
 
+  // Add architecture aliases
   if (context.arch === 'x64') {
-    archs.push('amd64', 'x64')
+    archs.push('amd64')
   } else if (context.arch === 'arm64') {
     archs.push('aarch64')
   }
 
+  // Add universal arch for macOS
   if (context.platform === 'darwin') {
     archs.push('universal')
   }
@@ -142,7 +146,6 @@ export function generateErrorDetails(
 ): string {
   const { platforms, archs } = getPlatformIdentifiers(context)
   return [
-    `Could not find a matching release asset for your system:`,
     `- Platform(s): ${platforms.join(', ')}`,
     `- Architecture(s): ${archs.join(', ')}`,
     `\nAvailable assets:`,
@@ -197,7 +200,10 @@ async function checkGithubUrl(
   const viableAsset = findViableAsset(assetAnalysis, context)
 
   if (!viableAsset) {
-    throw new Error(generateErrorDetails(assetAnalysis, context))
+    throw new Error(
+      `Could not find a matching release asset for your system:` + '\n' +
+        generateErrorDetails(assetAnalysis, context),
+    )
   }
 
   return {
