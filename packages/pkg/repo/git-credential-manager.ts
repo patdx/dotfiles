@@ -25,7 +25,7 @@ export default {
       )
     },
   },
-} satisfies KnownPackage
+} satisfies KnownPackage as KnownPackage
 
 // function getLatestVersion(release: Release) {
 //   return release.tag_name?.replace(/^v/, '')

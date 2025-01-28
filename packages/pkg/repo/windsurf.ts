@@ -49,4 +49,4 @@ export default {
       },
     }
   },
-} satisfies KnownPackage
+} satisfies KnownPackage as KnownPackage
