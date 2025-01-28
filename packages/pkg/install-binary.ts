@@ -18,52 +18,80 @@ import {
   TempDir,
   tryMove,
 } from './shared.ts'
+import { checkUrl } from './shared/url-checker.ts'
+import { guessBinaryName } from './shared/guess-binary-name.ts'
+import type { InstallOptions, KnownPackage } from './types.ts'
 
-interface InstallOptions {
-  url: string
-  binaryName: string
-  version?: string
-  shortcut?: {
-    name?: string
-    icon?: string
+export async function downloadAndInstall(
+  input: KnownPackage | InstallOptions,
+) {
+  let options: InstallOptions
+  if ('name' in input) {
+    const knownPackage = input as KnownPackage
+    options = typeof knownPackage.options === 'function'
+      ? await knownPackage.options()
+      : knownPackage.options
+  } else {
+    options = input
   }
-}
 
-function getFileTypeFromUrl(url: string): 'zip' | 'targz' {
-  const lowercaseUrl = url.toLowerCase()
-  return lowercaseUrl.endsWith('.tar.gz') || lowercaseUrl.endsWith('.tgz')
-    ? 'targz'
-    : 'zip'
-}
-
-export async function downloadAndInstall(options: InstallOptions) {
   const {
-    url,
-    binaryName,
+    url: inputUrl,
+    binaryName: providedBinaryName,
     version = 'latest',
     shortcut,
+    urlProvider,
   } = options
 
+  const { binaryUrl, version: detectedVersion, type } = await checkUrl(
+    inputUrl,
+    urlProvider,
+  )
+
+  const binaryName = providedBinaryName ?? guessBinaryName(binaryUrl)
+  const finalVersion = version === 'latest'
+    ? (detectedVersion ?? 'latest')
+    : version
+
   const installDir = join(PKG_HOME, binaryName)
-  const installVersionDir = join(installDir, version)
+  const installVersionDir = join(installDir, finalVersion)
   const installCurrentDir = join(installDir, 'current')
 
+  // Check if current version matches the requested version
+  if (await exists(installCurrentDir)) {
+    try {
+      const currentTarget = await Deno.readLink(installCurrentDir)
+      const currentVersion = currentTarget.split('/').pop()
+      if (currentVersion === finalVersion) {
+        console.log(
+          `${binaryName} ${finalVersion} is already installed and is the current version`,
+        )
+        return
+      }
+    } catch (error: unknown) {
+      console.warn(
+        `Could not read current version symlink: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+      )
+    }
+  }
+
   if (await exists(installVersionDir)) {
-    console.log(`${binaryName} ${version} is already downloaded`)
+    console.log(`${binaryName} ${finalVersion} is already downloaded`)
   } else {
     using tempDir = new TempDir()
-    const fileType = getFileTypeFromUrl(url)
     const downloadPath = join(
       tempDir.path,
-      `download.${fileType === 'targz' ? 'tar.gz' : 'zip'}`,
+      `download.${type === 'targz' ? 'tar.gz' : 'zip'}`,
     )
 
-    await downloadToFile(url, downloadPath)
+    await downloadToFile(binaryUrl, downloadPath)
 
     const extractDir = join(tempDir.path, 'extracted')
     await Deno.mkdir(extractDir, { recursive: true })
 
-    if (fileType === 'targz') {
+    if (type === 'targz') {
       await extractTarGz(downloadPath, extractDir)
     } else {
       await extractZip(downloadPath, extractDir)
@@ -108,19 +136,12 @@ export async function downloadAndInstall(options: InstallOptions) {
     console.log(`Shortcut created: ${success}`)
   }
 
+  if (options.doAfterInstall) {
+    await options.doAfterInstall()
+  }
+
   console.log(
-    `${binaryName} version ${version} has been installed to ${installVersionDir}`,
+    `${binaryName} version ${finalVersion} has been installed to ${installVersionDir}`,
   )
   console.log(`Binary available at: ${localBinPath}`)
-}
-
-if (import.meta.main) {
-  const [url, binaryName, version] = Deno.args
-  if (!url || !binaryName) {
-    console.error(
-      'Usage: deno run -A install-binary.ts <url> <binaryName> [version]',
-    )
-    Deno.exit(1)
-  }
-  await downloadAndInstall({ url, binaryName, version })
 }

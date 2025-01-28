@@ -43,9 +43,11 @@ export async function update() {
   }
 
   if (process.platform === 'linux') {
-    await import('@patdx/pkg/install-gcm-linux').then((m) =>
-      m.installGcmLinux()
+    const { default: gcm } = await import(
+      '@patdx/pkg/repo/git-credential-manager'
     )
+    const { downloadAndInstall } = await import('@patdx/pkg/install-binary')
+    await downloadAndInstall(gcm)
   }
 
   console.log('Update completed successfully!')

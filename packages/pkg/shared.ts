@@ -1,4 +1,4 @@
-import { copy, move } from '@std/fs'
+import { copy, exists, move } from '@std/fs'
 import { join } from '@std/path'
 import { homedir as getHomeDir } from 'node:os'
 import path from 'node:path'
@@ -192,3 +192,78 @@ async function copyAndDelete(
 //   await Deno.writeTextFile(shortcutPath, shortcutContent)
 //   await Deno.chmod(shortcutPath, 0o755)
 // }
+
+export async function listInstalledPackages() {
+  const packages: Array<{
+    name: string
+    version: string
+    path: string
+  }> = []
+
+  try {
+    for await (const entry of Deno.readDir(LOCAL_BIN_DIR)) {
+      if (!entry.isSymlink) continue
+
+      const linkPath = join(LOCAL_BIN_DIR, entry.name)
+      const realPath = await Deno.readLink(linkPath)
+
+      // Check if it points to our PKG_HOME
+      if (!realPath.includes(PKG_HOME)) continue
+
+      // Get version by reading the 'current' symlink
+      const pkgPath = join(PKG_HOME, entry.name)
+      const currentPath = join(pkgPath, 'current')
+      let version = 'unknown'
+      try {
+        const versionPath = await Deno.readLink(currentPath)
+        version = versionPath.split('/').pop() || 'unknown'
+      } catch {
+        // Ignore errors reading version
+      }
+
+      packages.push({
+        name: entry.name,
+        version,
+        path: realPath,
+      })
+    }
+  } catch (error) {
+    console.error('Error reading installed packages:', error)
+    return []
+  }
+
+  return packages
+}
+
+export async function removePackage(
+  name: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const localBinPath = join(LOCAL_BIN_DIR, name)
+    const pkgPath = join(PKG_HOME, name)
+
+    // Check if package exists
+    if (!await exists(localBinPath) && !await exists(pkgPath)) {
+      return { success: false, error: `Package '${name}' is not installed` }
+    }
+
+    // Remove symlink from .local/bin if it exists
+    if (await exists(localBinPath)) {
+      await Deno.remove(localBinPath)
+    }
+
+    // Remove package directory from .patdx/pkg if it exists
+    if (await exists(pkgPath)) {
+      await Deno.remove(pkgPath, { recursive: true })
+    }
+
+    return { success: true }
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: `Failed to remove package '${name}': ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    }
+  }
+}

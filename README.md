@@ -26,36 +26,53 @@ git config --global core.editor "code --wait"
 
 #### Install Git Credential Manager on Linux
 
-While Git Credential Manager does provide a .dev, they sadly don't provide a
+While Git Credential Manager does provide a .deb, they sadly don't provide a
 .rpm for Fedora users.
 
-I've prepared a simple script to install it on Linux. I nstall Deno then run the
+I've prepared a simple script to install it on Linux. Install Deno then run the
 following command:
 
 ```sh
-deno run -A jsr:@patdx/pkg/install-gcm-linux
+deno run -A jsr:@patdx/pkg add git-credential-manager
 ```
 
-You can check the source here:
-https://github.com/patdx/dotfiles/blob/main/src/install-gcm-linux.ts
+After installation, you may want to configure it to use the freedesktop.org
+Secret Service API:
 
-The original instructions are here:
-https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/install.md#tarball
+```sh
+git config --global credential.credentialStore secretservice
+```
 
-#### Installing Zipped Binaries on Linux
+#### Installing Binaries on Linux
 
 It can be inconvenient when tools just provide a zipped binary and ask you to
 install it.
 
-Use the "update" script to automatically download and install a zipped binary to
+Use the `pkg` CLI to automatically download and install a zipped binary to
 `~/.local/bin`.
-
-It will also update your .zshrc or .bashrc to add the path to the binary.
 
 Example for DuckDB:
 
 ```sh
-deno run -A jsr:@patdx/pkg/install-binary https://github.com/duckdb/duckdb/releases/download/v1.1.2/duckdb_cli-linux-amd64.zip duckdb
+deno run -A jsr:@patdx/pkg add --url https://github.com/duckdb/duckdb/releases/download/v1.1.2/duckdb_cli-linux-amd64.zip --name duckdb
+```
+
+You can also install known packages directly by name:
+
+```sh
+deno run -A jsr:@patdx/pkg add windsurf
+```
+
+To list installed packages:
+
+```sh
+deno run -A jsr:@patdx/pkg list
+```
+
+To remove a package:
+
+```sh
+deno run -A jsr:@patdx/pkg remove duckdb
 ```
 
 #### Doing updates on Linux

@@ -1,12 +1,12 @@
 {
   "name": "@patdx/pkg",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "license": "MIT",
   "exports": {
     ".": "./cli.ts",
-    "./install-gcm-linux": "./install-gcm-linux.ts",
     "./install-binary": "./install-binary.ts",
-    "./install-windsurf": "./install-windsurf.ts"
+    "./repo/git-credential-manager": "./repo/git-credential-manager.ts",
+    "./repo/windsurf": "./repo/windsurf.ts"
   },
   "tasks": {
     "cli": "deno run -A ./cli.ts",
