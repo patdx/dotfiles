@@ -7,6 +7,7 @@
  */
 
 import $ from '@david/dax'
+import process from 'node:process'
 
 $.setPrintCommand(true)
 
@@ -41,7 +42,11 @@ export async function update() {
     await $`brew upgrade`
   }
 
-  await import('@patdx/pkg/install-gcm-linux').then((m) => m.installGcmLinux())
+  if (process.platform === 'linux') {
+    await import('@patdx/pkg/install-gcm-linux').then((m) =>
+      m.installGcmLinux()
+    )
+  }
 
   console.log('Update completed successfully!')
 }

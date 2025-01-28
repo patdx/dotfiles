@@ -7,9 +7,8 @@
  */
 
 import $ from '@david/dax'
-import fs from 'node:fs'
 import process from 'node:process'
-import { downloadToFile } from './shared.ts'
+import { downloadAndInstall } from './install-binary.ts'
 
 type Release = {
   /** @example "v2.6.0" */
@@ -53,22 +52,13 @@ export async function installGcmLinux() {
     process.exit(1)
   }
 
-  using _tempDir = new TempDir('.temp')
-
-  await downloadToFile(asset.browser_download_url, '.temp/gcm.tar.gz')
-
-  const uid = process.getuid?.()
-  console.log(`UID: ${uid}`)
-  if (uid !== 0) {
-    console.log('Requesting root privileges')
-    await $`sudo tar -xvf gcm.tar.gz -C /usr/local/bin`
-  } else {
-    await $`tar -xvf gcm.tar.gz -C /usr/local/bin`
-  }
+  await downloadAndInstall({
+    url: asset.browser_download_url,
+    binaryName: 'git-credential-manager',
+    version: latestVersion,
+  })
 
   await $`git-credential-manager configure`
-
-  //
 
   console.log('')
   console.log(`Note: Additional configuration required for Linux`)
@@ -80,26 +70,6 @@ export async function installGcmLinux() {
   )
   console.log('')
   console.log(`git config --global credential.credentialStore secretservice`)
-}
-
-class TempDir implements Disposable {
-  #path: string
-
-  constructor(path: string) {
-    this.#path = path
-    // clear it in case it already exists
-    fs.rmSync(this.#path, { recursive: true, force: true })
-    fs.mkdirSync(path, { recursive: true })
-  }
-
-  get path() {
-    return this.#path
-  }
-
-  [Symbol.dispose]() {
-    // Remove the directory and its contents recursively
-    fs.rmSync(this.#path, { recursive: true, force: true })
-  }
 }
 
 function getLatestVersion(release: Release) {

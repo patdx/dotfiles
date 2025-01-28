@@ -3,23 +3,10 @@
  * @module
  */
 
-import { exists } from '@std/fs'
-import createDesktopShortcut from 'create-desktop-shortcuts'
-import { homedir as getHomeDir } from 'node:os'
 import path from 'node:path'
 import { ofetch } from 'ofetch'
-import {
-  downloadToFile,
-  extractTarGz,
-  getProcessingDir,
-  TempDir,
-  tryMove,
-} from './shared.ts'
-
-const PKG_HOME = path.resolve(getHomeDir(), '.patdx', 'pkg')
-const LOCAL_BIN_DIR = path.join(getHomeDir() || '', '.local', 'bin')
-
-console.log(JSON.stringify({ PKG_HOME, LOCAL_BIN_DIR }, null, 2))
+import { downloadAndInstall } from './install-binary.ts'
+import { PKG_HOME } from './shared.ts'
 
 export async function installWindsurf() {
   //   {
@@ -46,78 +33,11 @@ export async function installWindsurf() {
     windsurfVersion: string
   }>('https://windsurf-stable.codeium.com/api/update/linux-x64/stable/latest')
 
-  // ~/.patdx/pkg/windsurf
-  const installDir = path.join(PKG_HOME, 'windsurf')
-
-  // ~/.patdx/pkg/windsurf/1.0.5
-  const installVersionDir = path.join(installDir, result.windsurfVersion)
-
-  // ~/.patdx/pkg/windsurf/current, symlinked to actual version dir
-  const installCurrentDir = path.join(installDir, 'current')
-
-  if (await exists(installVersionDir)) {
-    console.log(`Windsurf ${result.windsurfVersion} is already downloaded`)
-  } else {
-    // DO NOT CHANGE THE "using" it is correct!
-    using tempDir = new TempDir()
-    const downloadPath = path.join(tempDir.path, 'download.tar.gz')
-
-    await downloadToFile(result.url, downloadPath)
-
-    const extractDir = path.join(tempDir.path, 'extracted')
-    await Deno.mkdir(extractDir, { recursive: true })
-
-    await extractTarGz(downloadPath, extractDir)
-
-    const processingDir = await getProcessingDir(extractDir)
-
-    console.log(`Processing directory: ${processingDir}`)
-
-    await Deno.mkdir(installDir, { recursive: true })
-
-    await tryMove(processingDir, installVersionDir, {
-      overwrite: true,
-    })
-  }
-
-  console.log(`Linking ${installCurrentDir} to ${installVersionDir}`)
-
-  if (await exists(installCurrentDir)) {
-    await Deno.remove(installCurrentDir, {
-      recursive: true,
-    })
-  }
-
-  await Deno.symlink(
-    installVersionDir,
-    installCurrentDir,
-  )
-
-  const localBin = path.join(LOCAL_BIN_DIR, 'windsurf')
-
-  const linkOld = path.join(installDir, 'current', 'windsurf')
-  const linkNew = localBin
-
-  console.log(`Linking ${linkNew} to ${linkOld}`)
-
-  if (await exists(linkNew)) {
-    await Deno.remove(linkNew) // in case symlink already exists
-  }
-  await Deno.symlink(linkOld, linkNew)
-
-  const desktopDir = path.join(
-    getHomeDir(),
-    '.local',
-    'share',
-    'applications',
-  )
-
-  console.log(`Creating desktop shortcut in ${desktopDir}`)
-
-  const success = createDesktopShortcut({
-    linux: {
-      filePath: localBin,
-      outputPath: desktopDir,
+  await downloadAndInstall({
+    url: result.url,
+    binaryName: 'windsurf',
+    version: result.windsurfVersion,
+    shortcut: {
       name: 'Windsurf',
       icon: path.join(
         PKG_HOME,
@@ -131,8 +51,6 @@ export async function installWindsurf() {
       ),
     },
   })
-
-  console.log(`Shortcut created: ${success}`)
 }
 
 if (import.meta.main) {

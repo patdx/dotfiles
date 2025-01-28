@@ -6,6 +6,8 @@
   },
   "tasks": {
     "update-lockfile": "deno cache --lock-write",
-    "link-check": "npx markdown-link-check README.md"
+    "link-check": "npx markdown-link-check README.md",
+    "check-deps": "deno run -A jsr:@check/deps",
+    "check-deps-all": "deno task --recursive check-deps"
   }
 }

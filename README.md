@@ -18,11 +18,11 @@ git config --global core.editor "code --wait"
 
 ### Software to Install
 
--   git
--   git-lfs
--   VS Code
--   [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)
-    (See next section)
+- git
+- git-lfs
+- VS Code
+- [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)
+  (See next section)
 
 #### Install Git Credential Manager on Linux
 

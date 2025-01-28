@@ -1,5 +1,42 @@
+import { copy, move } from '@std/fs'
+import { join } from '@std/path'
+import { homedir as getHomeDir } from 'node:os'
 import path from 'node:path'
-import { copy, ensureDir, move } from '@std/fs'
+
+export const PKG_HOME = path.resolve(getHomeDir(), '.patdx', 'pkg')
+export const LOCAL_BIN_DIR = path.join(getHomeDir() || '', '.local', 'bin')
+export const DESKTOP_DIR = path.join(
+  getHomeDir(),
+  '.local',
+  'share',
+  'applications',
+)
+
+console.log(JSON.stringify({ PKG_HOME, LOCAL_BIN_DIR, DESKTOP_DIR }, null, 2))
+
+export async function ensureBinInPath() {
+  const path = Deno.env.get('PATH') || ''
+  if (!path.includes(LOCAL_BIN_DIR)) {
+    const shell = Deno.env.get('SHELL') || ''
+    const isZsh = shell.includes('zsh')
+    const shellRcFile = isZsh
+      ? join(getHomeDir() || '', '.zshrc')
+      : join(getHomeDir() || '', '.bashrc')
+
+    console.log(`Detected shell: ${isZsh ? 'zsh' : 'bash'}`)
+
+    await Deno.writeTextFile(
+      shellRcFile,
+      `\nexport PATH="$PATH:${LOCAL_BIN_DIR}"\n`,
+      { append: true },
+    )
+
+    console.log(`Added ${LOCAL_BIN_DIR} to PATH in ${shellRcFile}`)
+    console.log(
+      `Please restart your terminal or run 'source ${shellRcFile}' to apply the changes.`,
+    )
+  }
+}
 
 export async function downloadToFile(url: string, filePath: string) {
   console.log(`Downloading file from ${url} to ${filePath}`)
@@ -109,9 +146,9 @@ export async function tryMove(
   if (!err) {
     return
   }
-  console.log(
-    `Failed to move ${from} to ${to} due to err ${err}. Trying to copy and delete`,
-  )
+  // console.log(
+  //   `Failed to move ${from} to ${to} due to err ${err}. Trying to copy and delete`,
+  // )
   err = await copyAndDelete(from, to, {
     overwrite: options?.overwrite,
   }).catch((err) => err)
@@ -134,3 +171,24 @@ async function copyAndDelete(
     recursive: true,
   })
 }
+
+// async function createDesktopShortcut(
+//   binaryPath: string,
+//   name: string,
+//   icon?: string,
+// ) {
+//   const desktopDir = join(getHomeDir(), 'Desktop')
+//   const shortcutPath = join(desktopDir, `${name}.desktop`)
+
+//   const shortcutContent = [
+//     '[Desktop Entry]',
+//     'Type=Application',
+//     'Terminal=false',
+//     `Name=${name}`,
+//     `Exec=${binaryPath}`,
+//     icon ? `Icon=${icon}` : '',
+//   ].filter(Boolean).join('\n')
+
+//   await Deno.writeTextFile(shortcutPath, shortcutContent)
+//   await Deno.chmod(shortcutPath, 0o755)
+// }
