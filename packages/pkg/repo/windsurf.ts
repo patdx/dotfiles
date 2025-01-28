@@ -1,5 +1,5 @@
 import { ofetch } from 'ofetch'
-import type { KnownPackage } from '../types.ts'
+import type { KnownPackage } from '../shared/types.ts'
 import { PKG_HOME } from '../shared.ts'
 import path from 'node:path'
 

@@ -8,5 +8,6 @@
   "publish": {
     "include": ["README.md", "main.ts"],
     "exclude": []
-  }
+  },
+  "tasks": {}
 }

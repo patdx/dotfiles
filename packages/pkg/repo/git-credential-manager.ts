@@ -1,4 +1,4 @@
-import type { KnownPackage } from '../types.ts'
+import type { KnownPackage } from '../shared/types.ts'
 import $ from '@david/dax'
 
 export default {

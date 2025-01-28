@@ -15,6 +15,7 @@
     "exclude": []
   },
   "tasks": {
-    "check-deps": "deno run -A jsr:@check/deps"
+    "check-deps": "deno run -A jsr:@check/deps",
+    "test": "deno test --permit-no-files"
   }
 }
