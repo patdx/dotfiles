@@ -19,6 +19,13 @@ interface GithubRelease {
 const BINARY_EXTENSIONS = ['.tar.gz', '.tgz', '.zip']
 const NON_BINARY_EXTENSIONS = ['.symbols.tar.gz', '-symbols.tar.gz']
 
+// Another example ambiguous case
+// Warning: Found multiple matching assets for your system:
+// - duckdb_cli-linux-amd64.zip
+// - libduckdb-linux-amd64.zip
+// Maybe add a heuristic where if it contains "cli", +1 point
+// If it contains "lib", -1 point?
+
 function couldBeBinary(url: string): boolean {
   url = url.toLowerCase()
   return BINARY_EXTENSIONS.some((ext) => url.endsWith(ext)) &&
