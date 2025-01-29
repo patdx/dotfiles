@@ -1,10 +1,12 @@
 {
   "name": "@patdx/pkg",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "license": "MIT",
   "exports": {
     ".": "./cli.ts",
     "./install-binary": "./install-binary.ts",
+    "./repo/caddy": "./repo/caddy.ts",
+    "./repo/duckdb": "./repo/duckdb.ts",
     "./repo/git-credential-manager": "./repo/git-credential-manager.ts",
     "./repo/windsurf": "./repo/windsurf.ts"
   },

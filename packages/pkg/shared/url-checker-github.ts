@@ -58,7 +58,7 @@ export function getPlatformIdentifiers(
 
   // Add platform aliases
   if (context.platform === 'darwin') {
-    platforms.push('macos', 'osx')
+    platforms.push('macos', 'osx', 'mac')
   } else if (context.platform === 'win32') {
     platforms.push('windows')
   }
