@@ -1,0 +1,11 @@
+- [ ] fix cache backend
+- [ ] add basic web UI, using hono?
+- [ ] break into smaller files
+- [ ] switch to a client server architecture
+- [ ] add config file that automatically updates with latest selected model, etc
+- [ ] automatic todos
+- [ ] interactive model selection
+- [ ] some kind of gui...
+- [ ] fix the caching
+- [ ] add tool calling or something for writing specific files
+- [ ] autogenerate cli help and auto sync between app and readme

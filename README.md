@@ -1,5 +1,7 @@
 # dotfiles
 
+<!-- TODO: rename to binbox? -->
+
 This repository contains my preferred settings for new development environments
 and some tools to help set them up.
 

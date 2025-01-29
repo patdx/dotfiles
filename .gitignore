@@ -175,3 +175,11 @@ dist
 .DS_Store
 
 *.tar.gz
+
+*.db
+*.db-shm
+*.db-wal
+
+# llm stuff
+packages/llm/llm-cli-context.md
+packages/llm/llm-cli-config.json
