@@ -14,7 +14,7 @@
     "xdiff": "npm:xdiff@^0.2.11"
   },
   "publish": {
-    "include": ["LICENSE", "README.md", "json-merge.ts", "cli.ts"],
+    "include": ["LICENSE", "README.md", "git-json-merge.ts", "cli.ts"],
     "exclude": []
   },
   "tasks": {
