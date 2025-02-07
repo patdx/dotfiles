@@ -9,6 +9,26 @@
 import $ from '@david/dax'
 import process from 'node:process'
 
+async function getGlobalNpmPackages(): Promise<string[]> {
+  try {
+    const output = (await $`npm ls -g --json`.quiet()).stdout
+    const json = JSON.parse(output)
+    // Handle potential changes in npm's JSON output format
+    if (json && typeof json === 'object' && 'dependencies' in json) {
+      return Object.keys(json.dependencies)
+    }
+    console.log(
+      'Warning: Unexpected npm ls output format. Continuing without package tracking.',
+    )
+    return []
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error)
+    console.log('Warning: Failed to get global npm packages:', message)
+    console.log('Continuing node update without package tracking.')
+    return []
+  }
+}
+
 $.setPrintCommand(true)
 
 export async function update() {
@@ -21,9 +41,27 @@ export async function update() {
   }
 
   if (await commandExists('fnm')) {
+    // Get initial global packages
+    const initialPackages = await getGlobalNpmPackages()
+
     await $`fnm install 22`
     await $`fnm default 22`
     await $`fnm use 22`
+
+    // Get new global packages
+    const newPackages = await getGlobalNpmPackages()
+
+    // Find and install missing packages
+    const missingPackages = initialPackages.filter((pkg) =>
+      !newPackages.includes(pkg)
+    )
+    if (missingPackages.length > 0) {
+      console.log(
+        'Reinstalling missing global packages:',
+        missingPackages.join(', '),
+      )
+      await $`npm install -g ${missingPackages.join(' ')}`
+    }
   }
 
   if (await commandExists('npm')) {
@@ -42,7 +80,10 @@ export async function update() {
     await $`brew upgrade`
   }
 
-  if (process.platform === 'linux') {
+  if (
+    process.platform === 'linux' &&
+    await commandExists('git-credential-manager')
+  ) {
     const { default: gcm } = await import(
       '@patdx/pkg/repo/git-credential-manager'
     )
