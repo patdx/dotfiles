@@ -7,5 +7,6 @@
   "cSpell.words": [
     "duckdb",
     "ofetch"
-  ]
+  ],
+  "editor.formatOnSave": true
 }

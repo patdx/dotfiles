@@ -13,6 +13,8 @@ and some tools to help set them up.
       - [Usage](#usage)
     - [@patdx/update](#patdxupdate)
       - [Usage](#usage-1)
+    - [@patdx/git-json-merge](#patdxjson-merge)
+      - [Usage](#usage-2)
   - [System](#system)
     - [git](#git)
     - [Software to Install](#software-to-install)
@@ -25,10 +27,11 @@ and some tools to help set them up.
 
 ## JSR Packages
 
-| Package                                       | Description                                                          |
-| --------------------------------------------- | -------------------------------------------------------------------- |
-| [@patdx/pkg](https://jsr.io/@patdx/pkg)       | CLI tool for installing and managing binary packages on Linux        |
-| [@patdx/update](https://jsr.io/@patdx/update) | Script for performing system updates and managing installed packages |
+| Package                                                       | Description                                                            |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [@patdx/pkg](https://jsr.io/@patdx/pkg)                       | CLI tool for installing and managing binary packages on Linux          |
+| [@patdx/update](https://jsr.io/@patdx/update)                 | Script for performing system updates and managing installed packages   |
+| [@patdx/git-json-merge](https://jsr.io/@patdx/git-json-merge) | Git merge driver for automatically resolving JSON/JSONC file conflicts |
 
 ### Platform Support
 
@@ -76,6 +79,45 @@ A script for performing system updates on Linux that:
 # Use latest version (recommended)
 deno run -A --reload jsr:@patdx/update
 ```
+
+### @patdx/git-json-merge
+
+A Git merge driver that automatically resolves merge conflicts in JSON files. It
+detects indentation automatically and performs three-way merges, making it
+easier to handle JSON file conflicts in Git.
+
+#### Usage
+
+First, install via JSR:
+
+```sh
+deno add jsr:@patdx/git-json-merge
+```
+
+Configure Git globally by adding to `~/.gitconfig`:
+
+```ini
+[core]
+    attributesfile = ~/.gitattributes
+[merge "json"]
+    name = custom merge driver for json files
+    driver = deno run --allow-read --allow-write jsr:@patdx/git-json-merge %A %O %B
+```
+
+Create `~/.gitattributes`:
+
+```ini
+*.json merge=json
+```
+
+Or for a single project, configure locally:
+
+```sh
+git config merge.json.driver "deno run --allow-read --allow-write jsr:@patdx/git-json-merge %A %O %B"
+git config merge.json.name "custom merge driver for json files"
+```
+
+And add the same `.gitattributes` to your project.
 
 ## System
 

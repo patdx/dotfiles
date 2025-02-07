@@ -1,5 +1,10 @@
 {
-  "workspace": ["./packages/pkg", "./packages/update", "./packages/dotfiles"],
+  "workspace": [
+    "./packages/pkg",
+    "./packages/update",
+    "./packages/dotfiles",
+    "./packages/git-json-merge"
+  ],
   "fmt": {
     "singleQuote": true,
     "semiColons": false
