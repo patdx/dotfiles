@@ -1,6 +1,6 @@
 {
   "name": "@patdx/update",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "license": "MIT",
   "exports": {
     ".": "./update.ts"
@@ -16,6 +16,7 @@
   },
   "tasks": {
     "check-deps": "deno run -A jsr:@check/deps",
-    "test": "deno test --permit-no-files"
+    "test": "deno test --permit-no-files",
+    "start": "deno run -A update.ts"
   }
 }

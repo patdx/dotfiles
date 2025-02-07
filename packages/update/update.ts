@@ -9,27 +9,11 @@
 import $ from '@david/dax'
 import process from 'node:process'
 
-async function getGlobalNpmPackages(): Promise<string[]> {
-  try {
-    const output = (await $`npm ls -g --json`.quiet()).stdout
-    const json = JSON.parse(output)
-    // Handle potential changes in npm's JSON output format
-    if (json && typeof json === 'object' && 'dependencies' in json) {
-      return Object.keys(json.dependencies)
-    }
-    console.log(
-      'Warning: Unexpected npm ls output format. Continuing without package tracking.',
-    )
-    return []
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error)
-    console.log('Warning: Failed to get global npm packages:', message)
-    console.log('Continuing node update without package tracking.')
-    return []
-  }
-}
-
 $.setPrintCommand(true)
+
+if (import.meta.main) {
+  await update()
+}
 
 export async function update() {
   if (await commandExists('bun')) {
@@ -91,6 +75,27 @@ export async function update() {
     await downloadAndInstall(gcm)
   }
 
+  // Handle Linux system updates
+  if (process.platform === 'linux') {
+    if (await commandExists('dnf')) {
+      console.log('Attempting system update with dnf...')
+      try {
+        await $`sudo dnf upgrade --refresh`.noThrow()
+      } catch (error) {
+        console.log('Could not complete dnf upgrade. This may be due to lack of sudo permissions.')
+      }
+    } else if (await commandExists('apt')) {
+      console.log('Attempting system update with apt...')
+      try {
+        await $`sudo apt update && sudo apt upgrade`.noThrow()
+      } catch (error) {
+        console.log('Could not complete apt upgrade. This may be due to lack of sudo permissions.')
+      }
+    } else {
+      console.log('No supported package manager found for system updates.')
+    }
+  }
+
   console.log('Update completed successfully!')
 }
 
@@ -102,6 +107,22 @@ async function commandExists(command: string): Promise<boolean> {
   return result.code === 0
 }
 
-if (import.meta.main) {
-  await update()
+async function getGlobalNpmPackages(): Promise<string[]> {
+  try {
+    const output = (await $`npm ls -g --json`.quiet()).stdout
+    const json = JSON.parse(output)
+    // Handle potential changes in npm's JSON output format
+    if (json && typeof json === 'object' && 'dependencies' in json) {
+      return Object.keys(json.dependencies)
+    }
+    console.log(
+      'Warning: Unexpected npm ls output format. Continuing without package tracking.',
+    )
+    return []
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error)
+    console.log('Warning: Failed to get global npm packages:', message)
+    console.log('Continuing node update without package tracking.')
+    return []
+  }
 }
