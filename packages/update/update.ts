@@ -44,7 +44,7 @@ export async function update() {
         'Reinstalling missing global packages:',
         missingPackages.join(', '),
       )
-      await $`npm install -g ${missingPackages.join(' ')}`
+      await $`npm install -g ${missingPackages}`
     }
   }
 
