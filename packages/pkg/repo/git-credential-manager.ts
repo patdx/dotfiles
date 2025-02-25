@@ -4,10 +4,14 @@ import $ from '@david/dax'
 export default {
   name: 'git-credential-manager',
   options: {
-    url:
-      'https://github.com/git-ecosystem/git-credential-manager/releases/latest',
     binaryName: 'git-credential-manager',
-    urlProvider: 'github',
+    files: [
+      {
+        url:
+          'https://github.com/git-ecosystem/git-credential-manager/releases/latest',
+        urlProvider: 'github',
+      },
+    ],
     async doAfterInstall() {
       await $`git-credential-manager configure`
 

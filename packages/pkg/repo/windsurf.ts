@@ -31,9 +31,14 @@ export default {
     }>('https://windsurf-stable.codeium.com/api/update/linux-x64/stable/latest')
 
     return {
-      url: result.url,
       binaryName: 'windsurf',
       version: result.windsurfVersion,
+      files: [
+        {
+          url: result.url,
+          type: 'targz',
+        },
+      ],
       shortcut: {
         name: 'Windsurf',
         icon: path.join(

@@ -35,17 +35,33 @@ export async function downloadAndInstall(
     options = input
   }
 
+  // Support both new format (files array) and legacy format (url)
   const {
-    url: inputUrl,
+    files = [],
     binaryName: providedBinaryName,
     version = 'latest',
     shortcut,
-    urlProvider,
+    url: legacyUrl,
+    urlProvider: legacyUrlProvider,
   } = options
 
+  // Migrate legacy format to new format if needed
+  if (legacyUrl && files.length === 0) {
+    files.push({
+      url: legacyUrl,
+      urlProvider: legacyUrlProvider,
+    })
+  }
+
+  if (files.length === 0) {
+    throw new Error('No files specified for download')
+  }
+
+  // Process the first file to determine version and binary name (legacy behavior)
+  const firstFile = files[0]
   const { binaryUrl, version: detectedVersion, type } = await checkUrl(
-    inputUrl,
-    urlProvider,
+    firstFile.url,
+    firstFile.urlProvider,
   )
 
   const binaryName = providedBinaryName ?? guessBinaryName(binaryUrl)
@@ -80,28 +96,61 @@ export async function downloadAndInstall(
   if (await exists(installVersionDir)) {
     console.log(`${binaryName} ${finalVersion} is already downloaded`)
   } else {
-    using tempDir = new TempDir()
-    const downloadPath = join(
-      tempDir.path,
-      `download.${type === 'targz' ? 'tar.gz' : 'zip'}`,
-    )
-
-    await downloadToFile(binaryUrl, downloadPath)
-
-    const extractDir = join(tempDir.path, 'extracted')
-    await Deno.mkdir(extractDir, { recursive: true })
-
-    if (type === 'targz') {
-      await extractTarGz(downloadPath, extractDir)
-    } else {
-      await extractZip(downloadPath, extractDir)
-    }
-
-    const processingDir = await getProcessingDir(extractDir)
-    console.log(`Processing directory: ${processingDir}`)
-
     await Deno.mkdir(installDir, { recursive: true })
-    await tryMove(processingDir, installVersionDir, { overwrite: true })
+    await Deno.mkdir(installVersionDir, { recursive: true })
+
+    // Process each file in the files array
+    for (const fileOptions of files) {
+      using tempDir = new TempDir()
+
+      // Process raw file downloads (no extraction)
+      if (fileOptions.type === 'raw') {
+        const filename = fileOptions.filename || basename(fileOptions.url)
+        const targetPath = join(installVersionDir, filename)
+
+        console.log(`Downloading ${fileOptions.url} to ${targetPath}`)
+        await downloadToFile(fileOptions.url, targetPath)
+
+        // Make file executable if specified
+        if (fileOptions.executable) {
+          console.log(`Making ${targetPath} executable`)
+          await Deno.chmod(targetPath, 0o755)
+        }
+      } // Process archive downloads (zip/targz)
+      else {
+        // Determine file type (zip/targz)
+        const fileType = fileOptions.type ||
+          (fileOptions.url.includes('.tar.gz') ? 'targz' : 'zip')
+
+        const downloadPath = join(
+          tempDir.path,
+          `download.${fileType === 'targz' ? 'tar.gz' : 'zip'}`,
+        )
+
+        // Check URL and download file
+        const { binaryUrl } = await checkUrl(
+          fileOptions.url,
+          fileOptions.urlProvider,
+        )
+        await downloadToFile(binaryUrl, downloadPath)
+
+        // Extract file
+        const extractDir = join(tempDir.path, 'extracted')
+        await Deno.mkdir(extractDir, { recursive: true })
+
+        if (fileType === 'targz') {
+          await extractTarGz(downloadPath, extractDir)
+        } else {
+          await extractZip(downloadPath, extractDir)
+        }
+
+        const processingDir = await getProcessingDir(extractDir)
+        console.log(`Processing directory: ${processingDir}`)
+
+        // Move extracted files to install directory
+        await tryMove(processingDir, installVersionDir, { overwrite: true })
+      }
+    }
   }
 
   console.log(`Linking ${installCurrentDir} to ${installVersionDir}`)
@@ -118,8 +167,11 @@ export async function downloadAndInstall(
   if (await exists(localBinPath)) {
     await Deno.remove(localBinPath)
   }
-  await Deno.symlink(binaryPath, localBinPath)
-  await Deno.chmod(binaryPath, 0o755)
+
+  // Link binary to ~/.local/bin if it exists
+  if (await exists(binaryPath)) {
+    await Deno.symlink(binaryPath, localBinPath)
+  }
 
   await ensureBinInPath()
 

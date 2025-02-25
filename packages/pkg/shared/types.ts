@@ -1,13 +1,24 @@
-export interface InstallOptions {
+export interface FileOptions {
   url: string
-  binaryName?: string
-  version?: string
+  filename?: string // Target filename, defaults to original name if not specified
+  type?: 'zip' | 'targz' | 'raw' // Add 'raw' type for direct file download
+  executable?: boolean // Whether to make the file executable (chmod +x)
   urlProvider?: string
+}
+
+export interface InstallOptions {
+  files: FileOptions[] // Array of files to download
+  binaryName?: string // Main executable name
+  version?: string // Package version
   shortcut?: {
     name?: string
     icon?: string
   }
   doAfterInstall?: () => Promise<void>
+
+  // Legacy fields for backward compatibility during migration
+  url?: string
+  urlProvider?: string
 }
 
 export type KnownPackage = {
