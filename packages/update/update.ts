@@ -49,7 +49,7 @@ export async function update() {
   }
 
   if (await commandExists('npm')) {
-    await $`npm update --global --latest`
+    await $`npm update --global`
   }
 
   if (await commandExists('corepack')) {
