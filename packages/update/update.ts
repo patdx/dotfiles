@@ -77,19 +77,34 @@ export async function update() {
 
   // Handle Linux system updates
   if (process.platform === 'linux') {
+    if (await commandExists('snap')) {
+      console.log('Attempting system update with snap...')
+      try {
+        await $`sudo snap refresh`.noThrow()
+      } catch (error) {
+        console.log(
+          'Could not complete snap refresh. This may be due to lack of sudo permissions.',
+        )
+      }
+    }
+
     if (await commandExists('dnf')) {
       console.log('Attempting system update with dnf...')
       try {
         await $`sudo dnf upgrade --refresh`.noThrow()
       } catch (error) {
-        console.log('Could not complete dnf upgrade. This may be due to lack of sudo permissions.')
+        console.log(
+          'Could not complete dnf upgrade. This may be due to lack of sudo permissions.',
+        )
       }
     } else if (await commandExists('apt')) {
       console.log('Attempting system update with apt...')
       try {
         await $`sudo apt update && sudo apt upgrade`.noThrow()
       } catch (error) {
-        console.log('Could not complete apt upgrade. This may be due to lack of sudo permissions.')
+        console.log(
+          'Could not complete apt upgrade. This may be due to lack of sudo permissions.',
+        )
       }
     } else {
       console.log('No supported package manager found for system updates.')
