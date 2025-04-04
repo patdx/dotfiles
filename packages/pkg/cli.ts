@@ -107,10 +107,12 @@ async function main(inputArgs: string[]): Promise<void> {
 
     if (isURL) {
       await downloadAndInstall({
-        url: specifier,
         binaryName: args.name,
         version: args.version,
-        urlProvider: args['url-provider'],
+        files: [{
+          url: specifier,
+          urlProvider: args['url-provider'],
+        }],
       })
     } else {
       const knownPackage = await checkForKnownPackage(specifier)

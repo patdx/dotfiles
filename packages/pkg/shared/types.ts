@@ -17,7 +17,9 @@ export interface InstallOptions {
   doAfterInstall?: () => Promise<void>
 
   // Legacy fields for backward compatibility during migration
+  /** @deprecated use files array instead */
   url?: string
+  /** @deprecated use files array instead */
   urlProvider?: string
 }
 
