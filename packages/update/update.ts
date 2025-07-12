@@ -60,6 +60,14 @@ export async function update() {
     await $`yt-dlp -U`
   }
 
+  if (await commandExists('claude')) {
+    await $`claude update`
+  }
+
+  if (await commandExists('opencode')) {
+    await $`opencode upgrade`
+  }
+
   if (await commandExists('brew')) {
     await $`brew upgrade`
   }
