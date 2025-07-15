@@ -8,6 +8,7 @@
 
 import $ from '@david/dax'
 import process from 'node:process'
+import { ParallelExecutor } from './parallel-executor.ts'
 
 $.setPrintCommand(true)
 
@@ -16,109 +17,134 @@ if (import.meta.main) {
 }
 
 export async function update() {
-  if (await commandExists('bun')) {
-    await $`bun upgrade`
-  }
-
-  if (await commandExists('deno')) {
-    await $`deno upgrade`
-  }
-
-  if (await commandExists('fnm')) {
-    // Get initial global packages
-    const initialPackages = await getGlobalNpmPackages()
-
-    await $`fnm install 22`
-    await $`fnm default 22`
-    await $`fnm use 22`
-
-    // Get new global packages
-    const newPackages = await getGlobalNpmPackages()
-
-    // Find and install missing packages
-    const missingPackages = initialPackages.filter((pkg) =>
-      !newPackages.includes(pkg)
-    )
-    if (missingPackages.length > 0) {
-      console.log(
-        'Reinstalling missing global packages:',
-        missingPackages.join(', '),
-      )
-      await $`npm install -g ${missingPackages}`
-    }
-  }
-
-  if (await commandExists('npm')) {
-    await $`npm update --global`
-  }
-
-  if (await commandExists('corepack')) {
-    await $`corepack install --global pnpm@latest`
-  }
-
-  if (await commandExists('yt-dlp')) {
-    await $`yt-dlp -U`
-  }
-
-  if (await commandExists('claude')) {
-    await $`claude update`
-  }
-
-  if (await commandExists('opencode')) {
-    await $`opencode upgrade`
-  }
-
-  if (await commandExists('brew')) {
-    await $`brew upgrade`
-  }
-
-  if (
-    process.platform === 'linux' &&
-    await commandExists('git-credential-manager')
-  ) {
-    const { default: gcm } = await import(
-      '@patdx/pkg/repo/git-credential-manager'
-    )
-    const { downloadAndInstall } = await import('@patdx/pkg/install-binary')
-    await downloadAndInstall(gcm)
-  }
-
-  // Handle Linux system updates
+  const executor = new ParallelExecutor()
+  
+  // Group 1: Independent language runtime updates
+  executor.addCommand({
+    id: 'bun-upgrade',
+    command: 'bun upgrade',
+    condition: () => commandExists('bun'),
+    dependencies: []
+  })
+  
+  executor.addCommand({
+    id: 'deno-upgrade',
+    command: 'deno upgrade',
+    condition: () => commandExists('deno'),
+    dependencies: []
+  })
+  
+  // Group 2: Node.js ecosystem updates (sequential due to dependencies)
+  executor.addCommand({
+    id: 'fnm-setup',
+    command: async () => {
+      await $`fnm install 22`
+      await $`fnm default 22`
+      await $`fnm use 22`
+    },
+    condition: () => commandExists('fnm'),
+    dependencies: []
+  })
+  
+  executor.addCommand({
+    id: 'npm-global-restore',
+    command: async () => {
+      const initialPackages = await getGlobalNpmPackages()
+      const newPackages = await getGlobalNpmPackages()
+      const missingPackages = initialPackages.filter(pkg => !newPackages.includes(pkg))
+      
+      if (missingPackages.length > 0) {
+        console.log('Reinstalling missing global packages:', missingPackages.join(', '))
+        await $`npm install -g ${missingPackages}`
+      }
+    },
+    condition: () => commandExists('fnm'),
+    dependencies: ['fnm-setup']
+  })
+  
+  executor.addCommand({
+    id: 'npm-global-update',
+    command: 'npm update --global',
+    condition: () => commandExists('npm'),
+    dependencies: []
+  })
+  
+  executor.addCommand({
+    id: 'corepack-pnpm',
+    command: 'corepack install --global pnpm@latest',
+    condition: () => commandExists('corepack'),
+    dependencies: []
+  })
+  
+  // Group 3: Independent tool updates
+  executor.addCommand({
+    id: 'yt-dlp-update',
+    command: 'yt-dlp -U',
+    condition: () => commandExists('yt-dlp'),
+    dependencies: []
+  })
+  
+  executor.addCommand({
+    id: 'claude-update',
+    command: 'claude update',
+    condition: () => commandExists('claude'),
+    dependencies: []
+  })
+  
+  executor.addCommand({
+    id: 'opencode-update',
+    command: 'opencode upgrade',
+    condition: () => commandExists('opencode'),
+    dependencies: []
+  })
+  
+  executor.addCommand({
+    id: 'brew-upgrade',
+    command: 'brew upgrade',
+    condition: () => commandExists('brew'),
+    dependencies: []
+  })
+  
+  // Group 4: System updates (sudo required - run last)
   if (process.platform === 'linux') {
-    if (await commandExists('snap')) {
-      console.log('Attempting system update with snap...')
-      try {
-        await $`sudo snap refresh`.noThrow()
-      } catch (error) {
-        console.log(
-          'Could not complete snap refresh. This may be due to lack of sudo permissions.',
-        )
-      }
-    }
-
-    if (await commandExists('dnf')) {
-      console.log('Attempting system update with dnf...')
-      try {
-        await $`sudo dnf upgrade --refresh`.noThrow()
-      } catch (error) {
-        console.log(
-          'Could not complete dnf upgrade. This may be due to lack of sudo permissions.',
-        )
-      }
-    } else if (await commandExists('apt')) {
-      console.log('Attempting system update with apt...')
-      try {
-        await $`sudo apt update && sudo apt upgrade`.noThrow()
-      } catch (error) {
-        console.log(
-          'Could not complete apt upgrade. This may be due to lack of sudo permissions.',
-        )
-      }
-    } else {
-      console.log('No supported package manager found for system updates.')
-    }
+    executor.addCommand({
+      id: 'gcm-update',
+      command: async () => {
+        const { default: gcm } = await import('@patdx/pkg/repo/git-credential-manager')
+        const { downloadAndInstall } = await import('@patdx/pkg/install-binary')
+        await downloadAndInstall(gcm)
+      },
+      condition: () => commandExists('git-credential-manager'),
+      dependencies: [],
+      requiresSudo: false
+    })
+    
+    executor.addCommand({
+      id: 'snap-refresh',
+      command: 'sudo snap refresh',
+      condition: () => commandExists('snap'),
+      dependencies: [],
+      requiresSudo: true
+    })
+    
+    executor.addCommand({
+      id: 'dnf-upgrade',
+      command: 'sudo dnf upgrade --refresh',
+      condition: () => commandExists('dnf'),
+      dependencies: [],
+      requiresSudo: true
+    })
+    
+    executor.addCommand({
+      id: 'apt-upgrade',
+      command: 'sudo apt update && sudo apt upgrade',
+      condition: () => commandExists('apt'),
+      dependencies: [],
+      requiresSudo: true
+    })
   }
-
+  
+  await executor.execute()
   console.log('Update completed successfully!')
 }
 
