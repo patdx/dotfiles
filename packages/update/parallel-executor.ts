@@ -1,4 +1,3 @@
-
 import $ from '@david/dax'
 
 export interface Command {
@@ -20,20 +19,20 @@ export class ParallelExecutor {
 
   async execute() {
     console.log('Starting parallel update execution...')
-    
+
     // Filter commands based on conditions
     const availableCommands = await this.filterAvailableCommands()
-    
+
     // Execute in phases: non-sudo commands first, then sudo commands
-    const nonSudoCommands = availableCommands.filter(cmd => !cmd.requiresSudo)
-    const sudoCommands = availableCommands.filter(cmd => cmd.requiresSudo)
-    
+    const nonSudoCommands = availableCommands.filter((cmd) => !cmd.requiresSudo)
+    const sudoCommands = availableCommands.filter((cmd) => cmd.requiresSudo)
+
     // Execute non-sudo commands in parallel with dependency resolution
     if (nonSudoCommands.length > 0) {
       console.log(`Executing ${nonSudoCommands.length} non-sudo commands...`)
       await this.executeCommandsWithDependencies(nonSudoCommands)
     }
-    
+
     // Execute sudo commands sequentially to avoid multiple password prompts
     if (sudoCommands.length > 0) {
       console.log('Executing system updates (may require sudo)...')
@@ -54,35 +53,39 @@ export class ParallelExecutor {
 
   private async filterAvailableCommands(): Promise<Command[]> {
     const available: Command[] = []
-    
+
     for (const command of this.commands) {
       if (await command.condition()) {
         available.push(command)
       }
     }
-    
+
     return available
   }
 
   private async executeCommandsWithDependencies(commands: Command[]) {
-    const pendingCommands = new Set(commands.map(c => c.id))
+    const pendingCommands = new Set(commands.map((c) => c.id))
     const executingCommands = new Map<string, Promise<void>>()
-    
+
     while (pendingCommands.size > 0 || executingCommands.size > 0) {
       // Find commands ready to execute (all dependencies satisfied)
-      const readyCommands = commands.filter(cmd => 
-        pendingCommands.has(cmd.id) && 
+      const readyCommands = commands.filter((cmd) =>
+        pendingCommands.has(cmd.id) &&
         this.areDependenciesSatisfied(cmd) &&
         !executingCommands.has(cmd.id)
       )
-      
+
       if (readyCommands.length === 0 && executingCommands.size === 0) {
         // Deadlock detection
         const remaining = Array.from(pendingCommands)
-        console.warn(`Cannot execute commands due to unmet dependencies: ${remaining.join(', ')}`)
+        console.warn(
+          `Cannot execute commands due to unmet dependencies: ${
+            remaining.join(', ')
+          }`,
+        )
         break
       }
-      
+
       // Start execution of ready commands
       for (const command of readyCommands) {
         const promise = this.executeCommand(command)
@@ -95,14 +98,14 @@ export class ParallelExecutor {
             this.failedCommands.add(command.id)
             pendingCommands.delete(command.id)
           })
-        
+
         executingCommands.set(command.id, promise)
       }
-      
+
       // Wait for at least one command to complete
       if (executingCommands.size > 0) {
         await Promise.race(Array.from(executingCommands.values()))
-        
+
         // Clean up completed commands
         const completed = []
         for (const [id, promise] of executingCommands.entries()) {
@@ -111,7 +114,7 @@ export class ParallelExecutor {
             completed.push(id)
           }
         }
-        
+
         for (const id of completed) {
           executingCommands.delete(id)
         }
@@ -120,7 +123,7 @@ export class ParallelExecutor {
   }
 
   private areDependenciesSatisfied(command: Command): boolean {
-    return command.dependencies.every(dep => this.executedCommands.has(dep))
+    return command.dependencies.every((dep) => this.executedCommands.has(dep))
   }
 
   private async shouldExecuteCommand(command: Command): Promise<boolean> {
@@ -130,7 +133,7 @@ export class ParallelExecutor {
 
   private async executeCommand(command: Command): Promise<void> {
     if (typeof command.command === 'string') {
-      await $(command.command as string).noThrow()
+      await $`${command.command}`.noThrow()
     } else {
       await command.command()
     }
