@@ -46,19 +46,28 @@ export async function update() {
     dependencies: []
   })
   
+  // Get initial npm packages before Node.js version switch
+  const initialNpmPackages = await getGlobalNpmPackages()
+  
   executor.addCommand({
     id: 'npm-global-restore',
     command: async () => {
-      const initialPackages = await getGlobalNpmPackages()
-      const newPackages = await getGlobalNpmPackages()
-      const missingPackages = initialPackages.filter(pkg => !newPackages.includes(pkg))
+      if (initialNpmPackages.length === 0) {
+        console.log('No initial npm packages to restore')
+        return
+      }
+      
+      const currentPackages = await getGlobalNpmPackages()
+      const missingPackages = initialNpmPackages.filter(pkg => !currentPackages.includes(pkg))
       
       if (missingPackages.length > 0) {
         console.log('Reinstalling missing global packages:', missingPackages.join(', '))
         await $`npm install -g ${missingPackages}`
+      } else {
+        console.log('All global npm packages are already installed')
       }
     },
-    condition: () => commandExists('fnm'),
+    condition: async () => (await commandExists('npm')) && initialNpmPackages.length > 0,
     dependencies: ['fnm-setup']
   })
   
@@ -161,8 +170,18 @@ async function commandExists(command: string): Promise<boolean> {
 
 async function getGlobalNpmPackages(): Promise<string[]> {
   try {
-    const output = (await $`npm ls -g --json`.quiet()).stdout
-    const json = JSON.parse(output)
+    // Check if npm command exists first
+    if (!(await commandExists('npm'))) {
+      return []
+    }
+    
+    const result = await $`npm ls -g --json`.quiet().noThrow()
+    if (result.code !== 0) {
+      console.log('Warning: npm ls command failed with code:', result.code)
+      return []
+    }
+    
+    const json = JSON.parse(result.stdout)
     // Handle potential changes in npm's JSON output format
     if (json && typeof json === 'object' && 'dependencies' in json) {
       return Object.keys(json.dependencies)
