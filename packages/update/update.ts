@@ -22,14 +22,14 @@ export async function update() {
   // Group 1: Independent language runtime updates
   executor.addCommand({
     id: 'bun-upgrade',
-    command: 'bun upgrade',
+    command: async () => await $`bun upgrade`,
     condition: () => commandExists('bun'),
     dependencies: []
   })
   
   executor.addCommand({
     id: 'deno-upgrade',
-    command: 'deno upgrade',
+    command: async () => await $`deno upgrade`,
     condition: () => commandExists('deno'),
     dependencies: []
   })
@@ -64,14 +64,14 @@ export async function update() {
   
   executor.addCommand({
     id: 'npm-global-update',
-    command: 'npm update --global',
+    command: async () => await $`npm update --global`,
     condition: () => commandExists('npm'),
     dependencies: []
   })
   
   executor.addCommand({
     id: 'corepack-pnpm',
-    command: 'corepack install --global pnpm@latest',
+    command: async () => await $`corepack install --global pnpm@latest`,
     condition: () => commandExists('corepack'),
     dependencies: []
   })
@@ -79,28 +79,28 @@ export async function update() {
   // Group 3: Independent tool updates
   executor.addCommand({
     id: 'yt-dlp-update',
-    command: 'yt-dlp -U',
+    command: async () => await $`yt-dlp -U`,
     condition: () => commandExists('yt-dlp'),
     dependencies: []
   })
   
   executor.addCommand({
     id: 'claude-update',
-    command: 'claude update',
+    command: async () => await $`claude update`,
     condition: () => commandExists('claude'),
     dependencies: []
   })
   
   executor.addCommand({
     id: 'opencode-update',
-    command: 'opencode upgrade',
+    command: async () => await $`opencode upgrade`,
     condition: () => commandExists('opencode'),
     dependencies: []
   })
   
   executor.addCommand({
     id: 'brew-upgrade',
-    command: 'brew upgrade',
+    command: async () => await $`brew upgrade`,
     condition: () => commandExists('brew'),
     dependencies: []
   })
@@ -121,7 +121,7 @@ export async function update() {
     
     executor.addCommand({
       id: 'snap-refresh',
-      command: 'sudo snap refresh',
+      command: async () => await $`sudo snap refresh`,
       condition: () => commandExists('snap'),
       dependencies: [],
       requiresSudo: true
@@ -129,7 +129,7 @@ export async function update() {
     
     executor.addCommand({
       id: 'dnf-upgrade',
-      command: 'sudo dnf upgrade --refresh',
+      command: async () => await $`sudo dnf upgrade --refresh`,
       condition: () => commandExists('dnf'),
       dependencies: [],
       requiresSudo: true
@@ -137,7 +137,10 @@ export async function update() {
     
     executor.addCommand({
       id: 'apt-upgrade',
-      command: 'sudo apt update && sudo apt upgrade',
+      command: async () => {
+        await $`sudo apt update`
+        await $`sudo apt upgrade`
+      },
       condition: () => commandExists('apt'),
       dependencies: [],
       requiresSudo: true

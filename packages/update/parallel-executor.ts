@@ -2,7 +2,7 @@ import $ from '@david/dax'
 
 export interface Command {
   id: string
-  command: string | (() => Promise<void>)
+  command: () => Promise<any>
   condition: () => Promise<boolean>
   dependencies: string[]
   requiresSudo?: boolean
@@ -132,10 +132,6 @@ export class ParallelExecutor {
   }
 
   private async executeCommand(command: Command): Promise<void> {
-    if (typeof command.command === 'string') {
-      await $`${command.command}`.noThrow()
-    } else {
-      await command.command()
-    }
+    await command.command()
   }
 }
