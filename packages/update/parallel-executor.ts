@@ -1,5 +1,3 @@
-import $ from '@david/dax'
-
 export interface Command {
   id: string
   command: () => Promise<any>

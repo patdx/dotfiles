@@ -1,6 +1,6 @@
 {
   "name": "@patdx/git-json-merge",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "MIT",
   "exports": {
     ".": "./cli.ts",
@@ -8,9 +8,9 @@
   },
   "imports": {
     "@david/dax": "jsr:@david/dax@^0.42.0",
-    "@std/fs": "jsr:@std/fs@^1.0.5",
-    "@std/jsonc": "jsr:@std/jsonc@^1.0.1",
-    "@std/path": "jsr:@std/path@^1.0.7",
+    "@std/fs": "jsr:@std/fs@^1.0.19",
+    "@std/jsonc": "jsr:@std/jsonc@^1.0.2",
+    "@std/path": "jsr:@std/path@^1.1.2",
     "xdiff": "npm:xdiff@^0.2.11"
   },
   "publish": {
