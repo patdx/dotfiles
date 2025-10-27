@@ -131,6 +131,7 @@ git config --global init.defaultBranch main
 git config --global pull.ff only
 git config --global rebase.autoStash true
 git config --global core.editor "code --wait"
+git config --global --type bool push.autoSetupRemote true
 ```
 
 ### Software to Install
