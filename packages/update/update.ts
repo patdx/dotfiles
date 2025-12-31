@@ -41,9 +41,9 @@ export async function update() {
   executor.addCommand({
     id: 'fnm-setup',
     command: async () => {
-      await $`fnm install 22`
-      await $`fnm default 22`
-      await $`fnm use 22`
+      await $`fnm install 24`
+      await $`fnm default 24`
+      await $`fnm use 24`
     },
     condition: () => commandExists('fnm'),
     dependencies: [],
