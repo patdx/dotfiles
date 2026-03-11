@@ -1,22 +1,17 @@
 {
   "name": "@patdx/update",
-  "version": "0.5.11",
+  "version": "0.5.12",
   "license": "MIT",
   "exports": {
     ".": "./update.ts"
   },
-  "imports": {
-    "@david/dax": "jsr:@david/dax@^0.42.0",
-    "@std/fs": "jsr:@std/fs@^1.0.19",
-    "@std/path": "jsr:@std/path@^1.1.2"
-  },
   "publish": {
-    "include": ["LICENSE", "README.md", "update.ts", "parallel-executor.ts"],
+    "include": ["LICENSE", "README.md", "update.ts"],
     "exclude": []
   },
   "tasks": {
     "check-deps": "deno run -A jsr:@check/deps",
-    "test": "deno test --permit-no-files",
+    "test": "deno test",
     "start": "deno run -A update.ts"
   }
 }

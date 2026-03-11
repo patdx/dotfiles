@@ -12,7 +12,17 @@ export const DESKTOP_DIR = path.join(
   'applications',
 )
 
-console.log(JSON.stringify({ PKG_HOME, LOCAL_BIN_DIR, DESKTOP_DIR }, null, 2))
+const MANAGED_PACKAGE_NAME = /^[A-Za-z0-9._-]+$/
+
+export function assertManagedPackageName(name: string): string {
+  if (!MANAGED_PACKAGE_NAME.test(name)) {
+    throw new Error(
+      `Invalid package name '${name}'. Use only letters, numbers, dots, underscores, and hyphens.`,
+    )
+  }
+
+  return name
+}
 
 export async function ensureBinInPath() {
   const path = Deno.env.get('PATH') || ''
@@ -239,12 +249,16 @@ export async function removePackage(
   name: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const localBinPath = join(LOCAL_BIN_DIR, name)
-    const pkgPath = join(PKG_HOME, name)
+    const packageName = assertManagedPackageName(name)
+    const localBinPath = join(LOCAL_BIN_DIR, packageName)
+    const pkgPath = join(PKG_HOME, packageName)
 
     // Check if package exists
     if (!await exists(localBinPath) && !await exists(pkgPath)) {
-      return { success: false, error: `Package '${name}' is not installed` }
+      return {
+        success: false,
+        error: `Package '${packageName}' is not installed`,
+      }
     }
 
     // Remove symlink from .local/bin if it exists

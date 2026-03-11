@@ -6,201 +6,188 @@
  * @module
  */
 
-import $ from '@david/dax'
-import process from 'node:process'
-import { ParallelExecutor } from './parallel-executor.ts'
+const textDecoder = new TextDecoder()
+const FNM_NODE_VERSION = '24'
 
-$.setPrintCommand(true)
+export interface CommandResult {
+  code: number
+  stdout: string
+}
+
+export interface UpdateRuntime {
+  platform: string
+  commandExists(command: string): Promise<boolean>
+  run(command: string[]): Promise<void>
+  runQuiet(command: string[]): Promise<CommandResult>
+  updateGitCredentialManager(): Promise<void>
+}
 
 if (import.meta.main) {
   await update()
 }
 
-export async function update() {
-  // Get initial npm packages before any Node.js version changes
-  const initialNpmPackages = await getGlobalNpmPackages()
+export async function update(
+  runtime: UpdateRuntime = createRuntime(),
+): Promise<void> {
+  const initialNpmPackages = await getGlobalNpmPackages(runtime)
+  const hasFnm = await runtime.commandExists('fnm')
 
-  const executor = new ParallelExecutor()
+  await runIfAvailable(runtime, 'bun', ['bun', 'upgrade'])
+  await runIfAvailable(runtime, 'deno', ['deno', 'upgrade'])
 
-  // Group 1: Independent language runtime updates
-  executor.addCommand({
-    id: 'bun-upgrade',
-    command: async () => await $`bun upgrade`,
-    condition: () => commandExists('bun'),
-    dependencies: [],
-  })
-
-  executor.addCommand({
-    id: 'deno-upgrade',
-    command: async () => await $`deno upgrade`,
-    condition: () => commandExists('deno'),
-    dependencies: [],
-  })
-
-  // Group 2: Node.js ecosystem updates (sequential due to dependencies)
-  executor.addCommand({
-    id: 'fnm-setup',
-    command: async () => {
-      await $`fnm install 24`
-      await $`fnm default 24`
-      await $`fnm use 24`
-    },
-    condition: () => commandExists('fnm'),
-    dependencies: [],
-  })
-
-  executor.addCommand({
-    id: 'npm-global-restore',
-    command: async () => {
-      if (initialNpmPackages.length === 0) {
-        console.log('No initial npm packages to restore')
-        return
-      }
-
-      const currentPackages = await getGlobalNpmPackages()
-      const missingPackages = initialNpmPackages.filter((pkg) =>
-        !currentPackages.includes(pkg)
-      )
-
-      if (missingPackages.length > 0) {
-        console.log(
-          'Reinstalling missing global packages:',
-          missingPackages.join(', '),
-        )
-        await $`npm install -g ${missingPackages}`
-      } else {
-        console.log('All global npm packages are already installed')
-      }
-    },
-    condition: async () =>
-      (await commandExists('npm')) && initialNpmPackages.length > 0,
-    dependencies: ['fnm-setup'],
-  })
-
-  executor.addCommand({
-    id: 'npm-global-update',
-    command: async () => await $`npm update --global`,
-    condition: () => commandExists('npm'),
-    dependencies: ['npm-global-restore'],
-  })
-
-  executor.addCommand({
-    id: 'corepack-pnpm',
-    command: async () => await $`corepack install --global pnpm@latest`,
-    condition: () => commandExists('corepack'),
-    dependencies: ['fnm-setup'],
-  })
-
-  executor.addCommand({
-    id: 'pnpm-global-update',
-    command: async () => await $`pnpm update --global`,
-    condition: () => commandExists('pnpm'),
-    dependencies: ['corepack-pnpm'],
-  })
-
-  // Group 3: Independent tool updates
-  executor.addCommand({
-    id: 'yt-dlp-update',
-    command: async () => await $`yt-dlp -U`,
-    condition: () => commandExists('yt-dlp'),
-    dependencies: [],
-  })
-
-  executor.addCommand({
-    id: 'claude-update',
-    command: async () => await $`claude update`,
-    condition: () => commandExists('claude'),
-    dependencies: ['npm-global-update', 'pnpm-global-update'],
-  })
-
-  executor.addCommand({
-    id: 'opencode-update',
-    command: async () => await $`opencode upgrade`,
-    condition: () => commandExists('opencode'),
-    dependencies: ['npm-global-update', 'pnpm-global-update'],
-  })
-
-  executor.addCommand({
-    id: 'brew-upgrade',
-    command: async () => await $`brew upgrade`,
-    condition: () => commandExists('brew'),
-    dependencies: [],
-  })
-
-  // Group 4: System updates (sudo required - run last)
-  if (process.platform === 'linux') {
-    executor.addCommand({
-      id: 'gcm-update',
-      command: async () => {
-        const { default: gcm } = await import(
-          '@patdx/pkg/repo/git-credential-manager'
-        )
-        const { downloadAndInstall } = await import('@patdx/pkg/install-binary')
-        await downloadAndInstall(gcm)
-      },
-      condition: () => commandExists('git-credential-manager'),
-      dependencies: [],
-      requiresSudo: false,
-    })
-
-    executor.addCommand({
-      id: 'snap-refresh',
-      command: async () => await $`sudo snap refresh`,
-      condition: () => commandExists('snap'),
-      dependencies: [],
-      requiresSudo: true,
-    })
-
-    executor.addCommand({
-      id: 'dnf-upgrade',
-      command: async () => await $`sudo dnf upgrade --refresh`,
-      condition: () => commandExists('dnf'),
-      dependencies: [],
-      requiresSudo: true,
-    })
-
-    executor.addCommand({
-      id: 'apt-upgrade',
-      command: async () => {
-        await $`sudo apt update`
-        await $`sudo apt upgrade`
-      },
-      condition: () => commandExists('apt'),
-      dependencies: [],
-      requiresSudo: true,
-    })
+  if (hasFnm) {
+    await runtime.run(['fnm', 'install', FNM_NODE_VERSION])
+    await runtime.run(['fnm', 'default', FNM_NODE_VERSION])
   }
 
-  await executor.execute()
+  const useFnmNode = hasFnm
+  const npmAvailable = await nodeCommandExists(runtime, useFnmNode, 'npm')
+  if (npmAvailable) {
+    await restoreMissingGlobalNpmPackages(
+      runtime,
+      initialNpmPackages,
+      useFnmNode,
+    )
+    await runtime.run(prefixWithFnm(useFnmNode, ['npm', 'update', '--global']))
+  }
+
+  const corepackAvailable = await nodeCommandExists(
+    runtime,
+    useFnmNode,
+    'corepack',
+  )
+  if (corepackAvailable) {
+    await runtime.run(
+      prefixWithFnm(
+        useFnmNode,
+        ['corepack', 'install', '--global', 'pnpm@latest'],
+      ),
+    )
+  }
+
+  const pnpmAvailable = await nodeCommandExists(runtime, useFnmNode, 'pnpm')
+  if (pnpmAvailable) {
+    await runtime.run(prefixWithFnm(useFnmNode, ['pnpm', 'update', '--global']))
+  }
+
+  await runIfAvailable(runtime, 'yt-dlp', ['yt-dlp', '-U'])
+  await runIfAvailable(runtime, 'claude', ['claude', 'update'])
+  await runIfAvailable(runtime, 'opencode', ['opencode', 'upgrade'])
+  await runIfAvailable(runtime, 'cursor-agent', ['cursor-agent', 'update'])
+  await runIfAvailable(runtime, 'copilot', ['copilot', 'update'])
+  await runIfAvailable(runtime, 'brew', ['brew', 'upgrade'])
+
+  if (runtime.platform === 'linux') {
+    if (await runtime.commandExists('git-credential-manager')) {
+      await runtime.updateGitCredentialManager()
+    }
+
+    await runIfAvailable(runtime, 'snap', ['sudo', 'snap', 'refresh'])
+    await runIfAvailable(runtime, 'dnf', [
+      'sudo',
+      'dnf',
+      'upgrade',
+      '--refresh',
+    ])
+
+    if (await runtime.commandExists('apt')) {
+      await runtime.run(['sudo', 'apt', 'update'])
+      await runtime.run(['sudo', 'apt', 'upgrade'])
+    }
+  }
+
   console.log('Update completed successfully!')
 }
 
-async function commandExists(command: string): Promise<boolean> {
-  const result = await $`command -v ${command}`
-    .printCommand(false)
-    .quiet()
-    .noThrow()
+export function prefixWithFnm(
+  useFnmNode: boolean,
+  command: string[],
+): string[] {
+  if (!useFnmNode) {
+    return command
+  }
+
+  return ['fnm', 'exec', '--using', FNM_NODE_VERSION, ...command]
+}
+
+async function nodeCommandExists(
+  runtime: UpdateRuntime,
+  useFnmNode: boolean,
+  command: string,
+): Promise<boolean> {
+  if (!useFnmNode) {
+    return await runtime.commandExists(command)
+  }
+
+  const result = await runtime.runQuiet(
+    prefixWithFnm(useFnmNode, [command, '--version']),
+  )
   return result.code === 0
 }
 
-async function getGlobalNpmPackages(): Promise<string[]> {
+async function runIfAvailable(
+  runtime: UpdateRuntime,
+  commandName: string,
+  command: string[],
+): Promise<boolean> {
+  if (!await runtime.commandExists(commandName)) {
+    return false
+  }
+
+  await runtime.run(command)
+  return true
+}
+
+async function restoreMissingGlobalNpmPackages(
+  runtime: UpdateRuntime,
+  initialPackages: string[],
+  useFnmNode: boolean,
+) {
+  if (initialPackages.length === 0) {
+    return
+  }
+
+  const currentPackages = await getGlobalNpmPackages(runtime, useFnmNode)
+  const missingPackages = initialPackages.filter((pkg) =>
+    !currentPackages.includes(pkg)
+  )
+
+  if (missingPackages.length === 0) {
+    console.log('All global npm packages are already installed')
+    return
+  }
+
+  console.log(
+    'Reinstalling missing global packages:',
+    missingPackages.join(', '),
+  )
+  await runtime.run(
+    prefixWithFnm(useFnmNode, ['npm', 'install', '-g', ...missingPackages]),
+  )
+}
+
+async function getGlobalNpmPackages(
+  runtime: UpdateRuntime,
+  useFnmNode: boolean = false,
+): Promise<string[]> {
   try {
-    // Check if npm command exists first
-    if (!(await commandExists('npm'))) {
+    if (!useFnmNode && !await runtime.commandExists('npm')) {
       return []
     }
 
-    const result = await $`npm ls -g --json`.quiet().noThrow()
+    const result = await runtime.runQuiet(
+      prefixWithFnm(useFnmNode, ['npm', 'ls', '-g', '--json']),
+    )
     if (result.code !== 0) {
       console.log('Warning: npm ls command failed with code:', result.code)
       return []
     }
 
     const json = JSON.parse(result.stdout)
-    // Handle potential changes in npm's JSON output format
     if (json && typeof json === 'object' && 'dependencies' in json) {
       return Object.keys(json.dependencies)
     }
+
     console.log(
       'Warning: Unexpected npm ls output format. Continuing without package tracking.',
     )
@@ -210,5 +197,54 @@ async function getGlobalNpmPackages(): Promise<string[]> {
     console.log('Warning: Failed to get global npm packages:', message)
     console.log('Continuing node update without package tracking.')
     return []
+  }
+}
+
+function createRuntime(): UpdateRuntime {
+  return {
+    platform: Deno.build.os,
+    async commandExists(command: string): Promise<boolean> {
+      const child = new Deno.Command('which', {
+        args: [command],
+        stdout: 'null',
+        stderr: 'null',
+      }).spawn()
+      const status = await child.status
+      return status.success
+    },
+    async run(command: string[]): Promise<void> {
+      console.log(`Running: ${command.join(' ')}`)
+      const child = new Deno.Command(command[0], {
+        args: command.slice(1),
+        stdin: 'inherit',
+        stdout: 'inherit',
+        stderr: 'inherit',
+      }).spawn()
+      const status = await child.status
+      if (!status.success) {
+        throw new Error(
+          `Command failed with code ${status.code}: ${command.join(' ')}`,
+        )
+      }
+    },
+    async runQuiet(command: string[]): Promise<CommandResult> {
+      const output = await new Deno.Command(command[0], {
+        args: command.slice(1),
+        stdout: 'piped',
+        stderr: 'null',
+      }).output()
+
+      return {
+        code: output.code,
+        stdout: textDecoder.decode(output.stdout),
+      }
+    },
+    async updateGitCredentialManager(): Promise<void> {
+      const { default: gcm } = await import(
+        '@patdx/pkg/repo/git-credential-manager'
+      )
+      const { downloadAndInstall } = await import('@patdx/pkg/install-binary')
+      await downloadAndInstall(gcm)
+    },
   }
 }

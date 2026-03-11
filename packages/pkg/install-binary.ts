@@ -7,6 +7,7 @@ import { ensureDir, exists } from '@std/fs'
 import { basename, join } from '@std/path'
 import createDesktopShortcut from 'create-desktop-shortcuts'
 import {
+  assertManagedPackageName,
   DESKTOP_DIR,
   downloadToFile,
   ensureBinInPath,
@@ -64,7 +65,9 @@ export async function downloadAndInstall(
     firstFile.urlProvider,
   )
 
-  const binaryName = providedBinaryName ?? guessBinaryName(binaryUrl)
+  const binaryName = assertManagedPackageName(
+    providedBinaryName ?? guessBinaryName(binaryUrl),
+  )
   const finalVersion = version === 'latest'
     ? (detectedVersion ?? 'latest')
     : version
@@ -118,9 +121,11 @@ export async function downloadAndInstall(
         }
       } // Process archive downloads (zip/targz)
       else {
-        // Determine file type (zip/targz)
-        const fileType = fileOptions.type ||
-          (fileOptions.url.includes('.tar.gz') ? 'targz' : 'zip')
+        const resolvedFile = await checkUrl(
+          fileOptions.url,
+          fileOptions.urlProvider,
+        )
+        const fileType = fileOptions.type ?? resolvedFile.type
 
         const downloadPath = join(
           tempDir.path,
@@ -128,11 +133,7 @@ export async function downloadAndInstall(
         )
 
         // Check URL and download file
-        const { binaryUrl } = await checkUrl(
-          fileOptions.url,
-          fileOptions.urlProvider,
-        )
-        await downloadToFile(binaryUrl, downloadPath)
+        await downloadToFile(resolvedFile.binaryUrl, downloadPath)
 
         // Extract file
         const extractDir = join(tempDir.path, 'extracted')

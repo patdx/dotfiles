@@ -4,15 +4,41 @@ import { availableProviders } from './shared/url-checker.ts'
 import { listInstalledPackages, removePackage } from './shared/shared.ts'
 import type { KnownPackage } from './shared/types.ts'
 
+const KNOWN_PACKAGES_DIR = new URL('./repo/', import.meta.url)
+
 async function checkForKnownPackage(
   name: string,
 ): Promise<KnownPackage | null> {
   try {
     const result = await import(`./repo/${name}.ts`).then((mod) => mod.default)
     return result
-  } catch (_error) {
+  } catch (error) {
+    if (error instanceof TypeError) {
+      return null
+    }
+
     return null
   }
+}
+
+export async function listAvailableKnownPackages(): Promise<
+  Array<{ pkgName: string } & KnownPackage>
+> {
+  const packages: Array<{ pkgName: string } & KnownPackage> = []
+
+  for await (const entry of Deno.readDir(KNOWN_PACKAGES_DIR)) {
+    if (!entry.isFile || !entry.name.endsWith('.ts')) {
+      continue
+    }
+
+    const pkgName = entry.name.replace('.ts', '')
+    const pkg = await checkForKnownPackage(pkgName)
+    if (pkg) {
+      packages.push({ pkgName, ...pkg })
+    }
+  }
+
+  return packages
 }
 
 async function main(inputArgs: string[]): Promise<void> {
@@ -36,21 +62,7 @@ async function main(inputArgs: string[]): Promise<void> {
   if (command === 'list') {
     const [packages, availablePackages] = await Promise.all([
       listInstalledPackages(),
-      (async () => {
-        const packages = []
-        try {
-          for await (const entry of Deno.readDir('./repo')) {
-            if (entry.isFile && entry.name.endsWith('.ts')) {
-              const pkgName = entry.name.replace('.ts', '')
-              const pkg = await checkForKnownPackage(pkgName)
-              if (pkg) packages.push({ pkgName, ...pkg })
-            }
-          }
-        } catch (error) {
-          console.error('Error reading available packages:', error)
-        }
-        return packages
-      })(),
+      listAvailableKnownPackages(),
     ])
 
     console.log('Installed packages:')
